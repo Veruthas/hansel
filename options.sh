@@ -13,13 +13,31 @@ function add_option() {
 }
 
 # (String option, ...)
+function process_line() {
+
+    # Set up logging info
+    make_line_log "$@";
+    
+    # process options
+    process "$@";
+}
+
+# (String line)
+function make_line_log() {
+    local datestring="$(date -u +%s)";
+    local args="$@";
+    
+    set_log_data "#$datestring\n$args";
+}
+
+# (String option, ...)
 function process() {
 
     local option="$1";        
     shift;
         
     if [[ -n "$option" ]] && [[ -n "${OPTIONS[$option]}" ]]; then
-        "process_${option}" "$@";
+        "option_${option}" "$@";
     elif [[ -z "$option" ]]; then
         no_option;
     else
@@ -27,6 +45,7 @@ function process() {
     fi
 
 }
+
 
 # () !! 1
 function no_option() {
