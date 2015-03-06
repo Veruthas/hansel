@@ -46,7 +46,7 @@ function acknowledge_logging() {
 # () . LOG_DATA >> LOG_FILE
 function log() {
     
-    if [[ -z "$LOGGING_IGNORED" ]] && [[ -n "$LOGGING_ENABLED" ]]; then
+    if [[ -z "$LOGGING_IGNORED" ]] && [[ -n "$LOGGING_ENABLED" ]]; then                
         LOGGING::log_data "$LOG_DATA" "$LOG_FILE";
     fi    
 }
@@ -56,7 +56,6 @@ function LOGGING::log_data() {
     
     local log_data="$1";
     local log_file="$2";
-    
     echo -en "$log_data" >> "$log_file";
     
 }

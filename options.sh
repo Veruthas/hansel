@@ -8,7 +8,7 @@ function add_option() {
 
     local option="$1";
 
-    OPTIONS["$option"] = true;
+    OPTIONS["$option"]=true;
 
 }
 
@@ -20,20 +20,23 @@ function process_line() {
     
     # process options
     process "$@";
+    
+    # log
+    log;
 }
 
 # (String line)
 function make_line_log() {
-    local datestring="$(date -u +%s)";
+    local datestring="$(date -u +'%Y.%m.%d-%T %Z')";
     local args="$@";
     
-    set_log_data "#$datestring\n$args";
+    set_log_data "# $datestring\n$args\n";
 }
 
 # (String option, ...)
 function process() {
 
-    local option="$1";        
+    local option="$1";
     shift;
         
     if [[ -n "$option" ]] && [[ -n "${OPTIONS[$option]}" ]]; then
