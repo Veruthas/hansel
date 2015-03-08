@@ -1,16 +1,18 @@
 #!/bin/bash
 
 # VARIABLES
-declare -r HANSEL_PATH="$(realpath $(dirname $0))"
+declare -r SCRIPT_PATH="$(realpath $(dirname $0))"
 
 declare -a SCRIPT_ARGUMENTS=("$@");
 
 
 # IMPORTS
-source "$HANSEL_PATH/logging.sh";
-source "$HANSEL_PATH/options.sh";
-source "$HANSEL_PATH/options-basic.sh";
+source "$SCRIPT_PATH/errors.sh";
 
-set_log_file hansel.log
+debug_simple_header
+debug_on OPTIONS
+
+source "$SCRIPT_PATH/options.sh";
+
 # MAIN
 process_line "$@";

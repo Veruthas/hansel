@@ -14,24 +14,15 @@ function add_option() {
 
 # (String option, ...)
 function process_line() {
-
-    # Set up logging info
-    make_line_log "$@";
+    
+    OPTIONS::on_preprocess "$@";
     
     # process options
     process "$@";
     
-    # log
-    log;
+    OPTIONS::on_postprocess "$@";
 }
 
-# (String line)
-function make_line_log() {
-    local datestring="$(date -u +'%Y.%m.%d-%T %Z')";
-    local args="$@";
-    
-    set_log_data "# $datestring\n$args\n";
-}
 
 # (String option, ...)
 function process() {
@@ -42,37 +33,60 @@ function process() {
     if [[ -n "$option" ]] && [[ -n "${OPTIONS[$option]}" ]]; then
         "option_${option}" "$@";
     elif [[ -z "$option" ]]; then
-        no_option;
+        OPTIONS::on_missing;
     else
-        invalid_option "$option" "$@";
+        OPTIONS::on_invalid "$option" "$@";
     fi
 
-}
-
-
-# () !! 1
-function no_option() {
-    echo "No option supplied" >&2;
-    exit 1;
-}
-
-# (String option, ...) !! 1
-function invalid_option() {
-
-    local option="$1";
-    shift;
-
-    echo "Invalid option: $option" >&2;
-    exit 1;
 }
 
 
 # (...) !! 1
 function verify_no_args() {
     
-    if [[ -n "$@" ]]; then
-        echo "Extra arguments found: '$@'" >&2;
-        exit 1;
-    fi
-    
+    [[ -n "$@" ]] && terminate 1 "Extra arguments found '$@'"    
+
 }
+
+
+# (...) | virtual
+function OPTIONS::on_preprocess() {
+    alert OPTIONS "in preprocess";
+}
+
+# (...) | virtual
+function OPTIONS::on_postprocess() {
+    alert OPTIONS "in postprocess";
+}
+
+
+# () !! 1 | virtual
+function OPTIONS::on_missing() {
+    terminate 1 "No option supplied";    
+}
+
+# (String option, ...) !! 1 | virtual
+function OPTIONS::on_invalid() {
+
+    local option="$1";
+    shift;
+
+    terminate 1 "Invalid option: $option";
+}
+
+
+# () -> loads option files
+function load_options() {    
+    local option_glob="$SCRIPT_PATH/options/*";
+    local option_file=;
+    
+    for option_file in $option_glob; do
+        [[ "$option_file" == "$option_glob" ]] && break;
+        alert OPTIONS "$option_file";
+        source "$option_file";
+    done
+    
+    alert OPTIONS "Loaded: (${!OPTIONS[@]})"
+}
+
+load_options
