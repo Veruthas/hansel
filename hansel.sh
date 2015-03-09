@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 # VARIABLES
 declare -r SCRIPT_PATH="$(realpath $(dirname $0))"
@@ -13,5 +13,8 @@ error_simple_header
 
 source "$SCRIPT_PATH/options.sh";
 
+declare -A
+echo
 # MAIN
-process_line "$@";
+#process_line "$@";
+list_vars

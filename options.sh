@@ -90,12 +90,19 @@ function load_options() {
         alert OPTIONS "loading <$(basename $option_file)> @ <$(dirname $option_file)>";
         source "$option_file";
         alert OPTIONS ' ';
+        declare -A
+        echo
     done
+    
+    declare -A
+    echo
     
     # HACK: Only way it will process this as one argument
     local added="added: (${!OPTIONS[@]})";
     alert OPTIONS "$added"
 }
 
+load_options;
 
-load_options
+declare -A
+echo
