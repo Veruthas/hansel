@@ -1,5 +1,7 @@
 #!/bin/bash
 
+debug_off OPTIONS
+
 declare -A OPTIONS=();
 
 
@@ -8,6 +10,8 @@ function add_option() {
 
     local option="$1";
 
+    alert OPTIONS "adding <$option>";
+    
     OPTIONS["$option"]=true;
 
 }
@@ -49,30 +53,31 @@ function verify_no_args() {
 }
 
 
-# (...) | virtual
+# virtual | (...) 
 function OPTIONS::on_preprocess() {
     alert OPTIONS "in preprocess";
 }
 
-# (...) | virtual
+# virtual | (...)
 function OPTIONS::on_postprocess() {
     alert OPTIONS "in postprocess";
 }
 
 
-# () !! 1 | virtual
+# virtual | () !! 1
 function OPTIONS::on_missing() {
-    terminate 1 "No option supplied";    
+    terminate 1 "no option supplied";    
 }
 
-# (String option, ...) !! 1 | virtual
+# virtual | (String option, ...) !! 1
 function OPTIONS::on_invalid() {
 
     local option="$1";
     shift;
 
-    terminate 1 "Invalid option: $option";
+    terminate 1 "invalid option: $option";
 }
+
 
 
 # () -> loads option files
@@ -82,11 +87,15 @@ function load_options() {
     
     for option_file in $option_glob; do
         [[ "$option_file" == "$option_glob" ]] && break;
-        alert OPTIONS "$option_file";
+        alert OPTIONS "loading <$(basename $option_file)> @ <$(dirname $option_file)>";
         source "$option_file";
+        alert OPTIONS ' ';
     done
     
-    alert OPTIONS "Loaded: (${!OPTIONS[@]})"
+    # HACK: Only way it will process this as one argument
+    local added="added: (${!OPTIONS[@]})";
+    alert OPTIONS "$added"
 }
+
 
 load_options

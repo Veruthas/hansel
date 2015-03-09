@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 # VARIABLES
 declare -r SCRIPT_PATH="$(realpath $(dirname $0))"
@@ -8,9 +8,8 @@ declare -a SCRIPT_ARGUMENTS=("$@");
 
 # IMPORTS
 source "$SCRIPT_PATH/errors.sh";
-
 debug_simple_header
-debug_on OPTIONS
+error_simple_header
 
 source "$SCRIPT_PATH/options.sh";
 

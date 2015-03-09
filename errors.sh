@@ -10,36 +10,71 @@ declare DEBUG_SILENT=;
 
 declare -A DEBUG_FLAGS=([-]=true);
 
+function DEBUG::print_args() {
+    echo PRINTING ARGS >&2;
+    for arg in "$@"; do 
+        echo $arg >&2;
+    done
+}
+
 # (String flag, String message) > message
 # - is the default flag
-function alert() {   
+function alert() {     
     local message=;
     local flag=;
     
     if [[ -z "$2" ]]; then
-        flag='-'; 
+        flag='-';         
         message="$1";        
-    else
-        flag="$1";
+    else       
+        flag="$1";        
         message="$2";        
     fi
-    
-    if [[ -n "${DEBUG_FLAGS[$flag]}" ]]; then
-    
-        message="$(make_debug_header $flag)'$message'";
         
-        [[ -z "$DEBUG_SILENT" ]] && echo "$message" >&2;        
-        [[ -n "$DEBUG_FILE" ]] && echo "$message" >> "$DEBUG_FILE";
+    alert_echo "$flag" "$message";
+}
+
+# (bool condition, String flag, String true, String false) ?> message
+function check() {
+    local condition="$1";    
+    shift; 
+    
+    local flag=;
+    local true_msg=;
+    local false_msg=;
+    
+    if (( $# < 3 )); then
+        flag='-';
+    else
+        flag="$1"; shift;
+    fi
+    
+    true_msg="$1";
+    false_msg="$2";
         
+    eval "$condition";
+    
+    if [[ "$?" == '0' ]]; then
+        alert_echo "$flag" "$true_msg"
+    else
+        alert_echo "$flag" "$false_msg";
     fi
 }
 
-# (bool condition, String flag, String message) ?> message
-function check() {
-    local condition="$1";
-    shift;
+# (String flag, String message) > message
+function alert_echo() {
     
-    "$condition" && alert "$@";        
+    local flag="$1";
+    
+    local message="$2";
+    
+    if [[ -n "${DEBUG_FLAGS[$flag]}" ]]; then        
+        message="$(make_debug_header $flag)'$message'";
+
+        [[ -z "$DEBUG_SILENT" ]] && echo "$message" >&2;        
+        [[ -n "$DEBUG_FILE" ]] && echo "$message" >> "$DEBUG_FILE";
+
+    fi
 }
 
 # ([flag]) -> DEBUG_FLAG[$flag]=true
@@ -96,7 +131,7 @@ function make_debug_header() {
 
 # () -> debug_header,debug_flag_header
 function debug_simple_header() {
-    debug_header 'DEBUG%flag%: ';
+    debug_header 'debug%flag%: ';
     debug_flag_header ' <%flag%>';
 }
 
@@ -151,7 +186,8 @@ function assert() {
     local condition="$1";
     shift;
     
-    "$condition" && terminate "$@";
+    eval "$condition";
+    [[ "$?" != '0' ]] && terminate "$@";
 }
 
 # () -> ERROR_SILET=true
@@ -179,6 +215,10 @@ function error_header() {
     local header="$1";
     
     ERROR_HEADER="$header";
+}
+
+function error_simple_header() {
+    error_header "error: "
 }
 
 #endregion
