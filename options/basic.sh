@@ -12,7 +12,7 @@ function option_do() {
 
 # (String condition, ...) -> if condition ...
 add_option 'if';
-function option_if() {        
+function option_if() {
     
     local condition="$1";
     shift;

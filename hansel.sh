@@ -19,5 +19,4 @@ error_simple_header
 source "$SCRIPT_PATH/options.sh";
 
 # MAIN
-#process_line "$@";
-list_vars
+process_line "$@";
