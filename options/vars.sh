@@ -1,5 +1,7 @@
 #!/bin/bash
 
+## Implements options for variables (set,unset,vars,on)
+
 debug_off OPTIONS_VARS;
 
 global -A VARS;

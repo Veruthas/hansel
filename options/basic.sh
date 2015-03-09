@@ -1,5 +1,7 @@
 #!/bin/bash
 
+## Implements options for generic functionality (do,if,ignore,pause)
+
 debug_off OPTIONS_BASIC;
 
 # (String command) -> eval command

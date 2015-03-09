@@ -1,5 +1,7 @@
 #!/bin/bash
 
+## Implements debug/error system
+
 #region DEBUG
 
 global DEBUG_HEADER;

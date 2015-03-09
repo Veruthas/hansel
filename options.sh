@@ -1,5 +1,7 @@
 #!/bin/bash
 
+## Implements Options API
+
 debug_off OPTIONS
 
 global -A OPTIONS;
