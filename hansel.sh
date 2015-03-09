@@ -1,9 +1,14 @@
 #!/bin/bash
 
-# VARIABLES
-declare -r SCRIPT_PATH="$(realpath $(dirname $0))"
+shopt -s expand_aliases
 
-declare -a SCRIPT_ARGUMENTS=("$@");
+alias global='declare -g';
+
+
+# VARIABLES
+global -r SCRIPT_PATH="$(realpath $(dirname $0))"
+
+global -a SCRIPT_ARGUMENTS=("$@");
 
 
 # IMPORTS
@@ -13,8 +18,6 @@ error_simple_header
 
 source "$SCRIPT_PATH/options.sh";
 
-declare -A
-echo
 # MAIN
 #process_line "$@";
 list_vars

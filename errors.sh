@@ -2,13 +2,13 @@
 
 #region DEBUG
 
-declare DEBUG_HEADER=;
-declare DEBUG_FLAG_HEADER;
+global DEBUG_HEADER;
+global DEBUG_FLAG_HEADER;
 
-declare DEBUG_FILE=;
-declare DEBUG_SILENT=;
+global DEBUG_FILE;
+global DEBUG_SILENT;
 
-declare -A DEBUG_FLAGS=([-]=true);
+global -A DEBUG_FLAGS=([-]=true);
 
 function DEBUG::print_args() {
     echo PRINTING ARGS >&2;

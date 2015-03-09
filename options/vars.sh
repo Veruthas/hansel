@@ -1,10 +1,10 @@
 #!/bin/bash
 
-debug_off OPTIONS_VARS;
+debug_on OPTIONS_VARS;
 
-declare -g -A VARS=([a]=10 [b]=7);
+global -A VARS;
 
-declare -g VARS_LOADED=;
+global VARS_LOADED;
 
 
 # () -> VARS < var_file
