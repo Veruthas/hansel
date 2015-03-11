@@ -146,8 +146,8 @@ function save_vars() {
     for name in "${!VARS[@]}"; do
         alert OPTIONS_VARS "subscript $name";
         value="${VARS[$name]}";
-        echo "$(flatten $name)"  >> "$var_file";
-        echo "$(flatten $value)" >> "$var_file";
+        echo $(flatten "$name")  >> "$var_file";
+        echo $(flatten "$value") >> "$var_file";
     done
         
     VARS_LOADED=true;
@@ -209,7 +209,7 @@ function VARS::show_var() {
     local name="$1";
     local value="${2:-<not defined>}";
     
-    echo " [$name] = $value";
+    echo " [$name] = '$value'";
 }
 
 # virtual | () => var_file

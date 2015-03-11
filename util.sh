@@ -4,7 +4,10 @@
 
 # (String text) => String flattened 
 function flatten() {
-    echo ${@//$'\n'/\\n};
+    local text="$@"
+    text="${@//$'\n'/\\n}";
+    text="${text//$'\t'/\\t}";
+    echo "$text"
 }
 
 # (String flattened) => String text
