@@ -12,11 +12,17 @@ global -a SCRIPT_ARGUMENTS=("$@");
 
 
 # IMPORTS
+source "$SCRIPT_PATH/util.sh"
+
 source "$SCRIPT_PATH/errors.sh";
 debug_simple_header
 error_simple_header
 
 source "$SCRIPT_PATH/options.sh";
+
+function VARS::var_file() {
+    echo "$SCRIPT_PATH/../vars";
+}
 
 # MAIN
 process_line "$@";

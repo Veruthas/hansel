@@ -66,32 +66,38 @@ hanstrap <system> <package> <archive> [<record #> | <date>]
 
 hansel
 
-    ignore ...
-
-    pause [prompt]
-
+    (* is not yet implemented)
+    BASIC OPTIONS
     do  <command>
     if  <command> ...    
+    
+    ignore ...
+    pause [prompt]    
 
+    *trace                       
+    
+    VARIABLE OPTIONS
     set [--as <value> | --from command ] <variable>...
     unset <variable>...
     vars ...
     on  <variable> ...    
     
-    import <source> <name>
-    export <name> <desitination>
+    FILE OPTIONS
+    *import <source> <name> [id]
+    *export <destination> <name> [id]
+    *remove <name> [id]
+    *files <name>...
     
-    ins [--confirm] <pkg...>
+    PACKAGE OPTIONS
+    *ins [--confirm] <pkg...>
 
-    aur [--confirm] <pkg>
+    *aur [--confirm] <pkg>
     
-    custom <url> <name>
+    *custom <url> <name>
     
-    sync [YYYY.MM.DD]           does a pacman -Syyuu after added
+    *sync [YYYY.MM.DD]           does a pacman -Syyuu after added        
     
-    trace                       traces a file
-    
-    refresh                     checks if anything has been installed in current record (compares line#)
+    *refresh                     checks if anything has been installed in current record (compares line#)
     
     
 For pkgs, same deal, everything is in package cache

@@ -118,10 +118,10 @@ function load_vars() {
                 unset name;
             else
                 if [[ -z "$name" ]]; then
-                    name="$line";            
+                    name="$(expand $line)";
                 else            
                     alert OPTIONS_VARS "VARS[$name]=$line";
-                    VARS["$name"]="$line";
+                    VARS["$name"]="$(expand $line)";
                     unset name;
                 fi
             fi
@@ -146,8 +146,8 @@ function save_vars() {
     for name in "${!VARS[@]}"; do
         alert OPTIONS_VARS "subscript $name";
         value="${VARS[$name]}";
-        echo "$name"  >> "$var_file";
-        echo "$value" >> "$var_file";
+        echo "$(flatten $name)"  >> "$var_file";
+        echo "$(flatten $value)" >> "$var_file";
     done
         
     VARS_LOADED=true;
