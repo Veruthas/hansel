@@ -113,7 +113,6 @@ function load_vars() {
         while read -r line; do
             
             # if a blank line is in the file
-            # TODO: support multi-line values
             if [[ -z "$line" ]]; then
                 unset name;
             else

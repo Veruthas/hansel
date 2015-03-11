@@ -158,11 +158,12 @@ declare ERROR_FILE=;
 declare ERROR_ID=;
 declare ERROR_MESSAGE=;
 
-# (int error, String message)
+# (int error, String message, bool? quit)
 function error() {
     
     ERROR_ID="${1:-0}";
     ERROR_MESSAGE="$2";
+    local quit="$3";
     
     local id_mark='%id%';    
     local header="${ERROR_HEADER//$id_mark/$ERROR_ID}";
@@ -172,15 +173,16 @@ function error() {
     [[ -z "$ERROR_SILENT" ]] && echo "$message" >&2;
     [[ -n "$ERROR_FILE" ]] && echo $message >> "$ERROR_FILE";
     
-    return "$ERROR_ID";
+    
+    [[ -z "$quit" ]] && return "$ERROR_ID" || exit "$ERROR_ID";
 }
 
 # (int error, String message)
 function terminate() {
 
-    error "$@";
-
-    exit "$ERROR_ID";
+    local error="$1";
+    local message="$2";
+    error "$error" "$message" "true";
 }
 
 # (bool condition, int error, String message)
@@ -221,6 +223,34 @@ function error_header() {
 
 function error_simple_header() {
     error_header "error: "
+}
+
+#endregion
+
+#region SUPPLIED_ERRORS
+
+global ERROR_MISSING_ARG_ID=1;
+
+# (String arg_name, bool? quit)
+function ERROR::missing_arg() {
+    local arg_name="$1";
+    local quit="$2";
+    
+    local message="missing argument <$arg_name>";
+    
+    error "$ERROR_MISSING_ARG_ID" "$message" "$quit";
+}
+
+global ERROR_PATH_NO_EXIST=2;
+
+# (String path, bool? quit)
+function ERROR::path_no_exist() {
+    local path="$1";
+    local quit="$2";
+    
+    local message="path <$path> does not exist";
+    
+    error "$ERROR_PATH_NO_EXIST" "$message" "$quit";
 }
 
 #endregion

@@ -24,5 +24,9 @@ function VARS::var_file() {
     echo "$SCRIPT_PATH/../vars";
 }
 
+source "$SCRIPT_PATH/file_util.sh";
+
 # MAIN
-process_line "$@";
+#process_line "$@";
+global storage_path="$SCRIPT_PATH/../storage";
+

@@ -30,6 +30,9 @@ function process_line() {
 }
 
 
+global PROCESS_MISSING_OPTION=1;
+global PROCESS_INVALID_OPTION=2;
+
 # (String option, ...)
 function process() {
 
@@ -40,8 +43,10 @@ function process() {
         "option_${option}" "$@";
     elif [[ -z "$option" ]]; then
         OPTIONS::on_missing;
+        return $PROCESS_MISSING_OPTION;
     else
         OPTIONS::on_invalid "$option" "$@";
+        return $PROCESS_INVALID_OPTION;
     fi
 
 }
@@ -68,7 +73,7 @@ function OPTIONS::on_postprocess() {
 
 # virtual | () !! 1
 function OPTIONS::on_missing() {
-    terminate 1 "no option supplied";    
+    terminate $PROCESS_MISSING_OPTION "no option supplied";    
 }
 
 # virtual | (String option, ...) !! 1
@@ -77,7 +82,7 @@ function OPTIONS::on_invalid() {
     local option="$1";
     shift;
 
-    terminate 1 "invalid option: $option";
+    terminate $PROCESS_INVALID_OPTION "invalid option: $option";
 }
 
 
