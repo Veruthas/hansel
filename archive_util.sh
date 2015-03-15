@@ -17,7 +17,7 @@ debug_off ARCHIVE;
 
 # (String archive_path) => int id
 function ARCHIVE::get_last_id() {
-    alert ARCHIVE 'in get_highest_id';
+    alert ARCHIVE 'in ARCHIVE::get_highest_id';
     
     local archive_path="$1";    
     local highest=;
@@ -44,7 +44,7 @@ function ARCHIVE::get_last_id() {
 
 # (String archive_path) => int id
 function ARCHIVE::get_next_id() {
-    alert ARCHIVE 'in get_next_id'
+    alert ARCHIVE 'in ARCHIVE::get_next_id'
     local archive_path="$1";
     
     local highest_id=$(ARCHIVE::get_last_id "$archive_path");
@@ -53,9 +53,32 @@ function ARCHIVE::get_next_id() {
 }
 
 
+# (String repo_path, String name)
+function ARCHIVE::get_archive_path() {
+    local repo_path="$1";
+    local name="$2";
+    
+    echo "$repo_path/$name";
+}
+
+# (String repo_path, String name, int? id)
+function ARCHIVE::get_archive_file() {
+    local repo_path="$1";
+    local name="$2";
+    
+    local id="$3";
+    
+    local archive_path="$(ARCHIVE::get_archive_path $repo_path $name)";
+    
+    [[ -z "$id" ]] && id="$(get_last_id $archive_path)";
+    
+    echo "$archive_path/$id";
+}
+
+
 # (String source_path, String repo_path, String archive_name, int? id)
 function ARCHIVE::import_file() {
-    alert ARCHIVE 'in import_file'
+    alert ARCHIVE 'in ARCHIVE::import_file'
     
     local source_path="$1";
     local repo_path="$2";
@@ -91,7 +114,7 @@ function ARCHIVE::import_file() {
 
 # (String dest_path, String repo_path, String archive_name, int? id)
 function ARCHIVE::export_file() {
-    alert ARCHIVE 'in_export_file';
+    alert ARCHIVE 'in ARCHIVE::export_file';
 
     local dest_path="$1";
     local repo_path="$2";
@@ -130,6 +153,7 @@ function ARCHIVE::export_file() {
 # TODO: Should I create the dirname of destination?
 # (String source, String destination) 
 function ARCHIVE::store() {
+    local ARCHIVE 'in ARCHIVE::store'
     local source="$1";    
     local destination="$2";
     
@@ -140,6 +164,8 @@ function ARCHIVE::store() {
 
 # (String source, String destination)
 function ARCHIVE::extract() {
+    alert ARCHIVE 'in ARCHIVE::extract'
+    
     local source="$1";
     local destination="$2";
     
@@ -154,7 +180,7 @@ function ARCHIVE::extract() {
     
     alert ARCHIVE "$file";
     
-    cp "$file" "$destination";
+    cp "$temp/$file" "$destination";
     
     
     rm -r "$temp";
