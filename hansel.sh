@@ -24,9 +24,15 @@ function VARS::var_file() {
     echo "$SCRIPT_PATH/../vars";
 }
 
-source "$SCRIPT_PATH/file_util.sh";
+source "$SCRIPT_PATH/archive_util.sh";
 
 # MAIN
 #process_line "$@";
 global storage_path="$SCRIPT_PATH/../storage";
 
+ARCHIVE::import_file "errors.sh" "$storage_path" "File0"
+ARCHIVE::import_file "util.sh" "$storage_path" "File0"
+ARCHIVE::import_file "options.sh" "$storage_path" "File0"
+ARCHIVE::import_file "archive_util.sh" "$storage_path" "File0" 1
+read -p "Press any key to continue...";
+ARCHIVE::export_file "$storage_path/File0/extracted_01.sh" "$storage_path" "File0" 1

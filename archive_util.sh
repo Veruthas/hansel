@@ -12,11 +12,11 @@
 ## file_path => tar'd file or directory (renamed with an id)
 ## repo_path/archive_name/ids...
 
-debug_on ARCHIVE;
+debug_off ARCHIVE;
 
 
 # (String archive_path) => int id
-function ARCHIVE::get_highest_id() {
+function ARCHIVE::get_last_id() {
     alert ARCHIVE 'in get_highest_id';
     
     local archive_path="$1";    
@@ -47,13 +47,14 @@ function ARCHIVE::get_next_id() {
     alert ARCHIVE 'in get_next_id'
     local archive_path="$1";
     
-    local highest_id=$(ARCHIVE::get_highest_id "$archive_path");
-    alert $highest_id
+    local highest_id=$(ARCHIVE::get_last_id "$archive_path");
+    
     [[ -z "$highest_id" ]] && echo 0 || echo $(( highest_id + 1 ));
 }
 
+
 # (String source_path, String repo_path, String archive_name, int? id)
-function import_file() {
+function ARCHIVE::import_file() {
     alert ARCHIVE 'in import_file'
     
     local source_path="$1";
@@ -67,23 +68,94 @@ function import_file() {
         return $ERROR_ID;
     fi
     
+    
     local archive_path="$repo_path/$archive_name";
     
+    
+    # Make the archive path if it doesn't exist
     [[ ! -e "$archive_path" ]] && mkdir -p "$archive_path";        
     
-    if [[ -z "$id" ]]; then 
-        id=$(ARCHIVE::get_next_id "$archive_path");
-    else
-        rm -v "$archive_path/$id"
-    fi
     
-    alert ARCHIVE "next id: $id";
+    # If no Id given, get next available one
+    [[ -z "$id" ]] && id=$(ARCHIVE::get_next_id "$archive_path");
     
-    tar -cf "$archive_path/$id" "$source_path";
+    
+    local file_path="$archive_path/$id";        
+
+    # remove archive if file exists
+    [[ -e "$file_path" ]] && rm "$file_path";
+    
+    
+    ARCHIVE::store "$source_path" "$file_path"
 }
 
 # (String dest_path, String repo_path, String archive_name, int? id)
-function export_file() {
+function ARCHIVE::export_file() {
     alert ARCHIVE 'in_export_file';
 
+    local dest_path="$1";
+    local repo_path="$2";
+    local archive_name="$3";
+    local id="$4";
+    
+    local archive_path="$repo_path/$archive_name";
+    
+    if [[ ! -e "$archive_path" ]]; then
+        error 2 "There is no archive with name $archive_name in $repo_path";
+        return 2;
+    fi
+    
+    # If no Id given, get highest_one
+    if [[ -z "$id" ]]; then 
+        id=$(ARCHIVE::get_last_id "$archive_path");
+        
+        if [[ -z "$id" ]]; then
+            error 3 "There are no versions of archive $archive_name stored.";
+            return 3;
+        fi    
+    fi
+    
+    local file_path="$archive_path/$id";
+    
+    if [[ ! -e "$file_path" ]]; then
+        error 4 "There is no version of archive $archive_name with id $id.";
+        return 4;
+    fi
+    
+    ARCHIVE::extract "$file_path" "$dest_path";
+    
+}
+
+
+# TODO: Should I create the dirname of destination?
+# (String source, String destination) 
+function ARCHIVE::store() {
+    local source="$1";    
+    local destination="$2";
+    
+    alert ARCHIVE "source='$source'; dest='$destination'";
+    
+    tar czf "$destination" "$source"
+}
+
+# (String source, String destination)
+function ARCHIVE::extract() {
+    local source="$1";
+    local destination="$2";
+    
+    
+    local temp="$(mktemp -d)";
+    
+    tar xf "$source" -C "$temp"
+    
+    
+    # HACK: Don't like using ls for this, but globbing isn't working
+    local file="$(ls $temp)";
+    
+    alert ARCHIVE "$file";
+    
+    cp "$file" "$destination";
+    
+    
+    rm -r "$temp";
 }
