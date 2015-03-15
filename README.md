@@ -86,7 +86,7 @@ hansel
     *import <source> <name> [id]
     *export <destination> <name> [id]
     *remove <name> [id]
-    *files <name>...
+    *files [name]
     
     PACKAGE OPTIONS
     *ins [--confirm] <pkg...>

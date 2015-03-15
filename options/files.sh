@@ -21,7 +21,7 @@ function option_import() {
     
     local repository_path="$(FILES::repository_path)";
     
-    ARCHIVE::import_file "$source" "$(FILES::repository_path)" "$name" "$id";                                      
+    ARCHIVE::import_file "$source" "$(FILES::repository_path)" "$name" "$id";
     
     local archive_path="$repository_path/$name/$id";
     
@@ -49,4 +49,21 @@ function option_export() {
     [[ -z "$id" ]] && id="$(ARCHIVE::get_last_id $archive_path)"
         
     echo "exported '$dest' from archive '$name', id #$id";
+}
+
+# (String name, int? id)
+add_option 'remove'; 
+function option_remove() {
+    local name="$1";
+    
+    local 
+}
+
+# (String? name) -> prints files or file versions >&1
+add_option 'files';
+function option_files() {
+    local name="$1";
+    local repo_path="$(FILES::repository_path)";
+    
+    ARCHIVE::display_files "$repo_path" "$name";
 }
