@@ -12,7 +12,7 @@
 ## file_path => tar'd file or directory (renamed with an id)
 ## repo_path/archive_name/ids...
 
-debug_off ARCHIVE;
+debug_on ARCHIVE;
 
 
 # (String archive_path) => int id
@@ -153,13 +153,29 @@ function ARCHIVE::export_file() {
 # TODO: Should I create the dirname of destination?
 # (String source, String destination) 
 function ARCHIVE::store() {
-    local ARCHIVE 'in ARCHIVE::store'
+    alert ARCHIVE 'in ARCHIVE::store';
+    
     local source="$1";    
     local destination="$2";
     
+    
     alert ARCHIVE "source='$source'; dest='$destination'";
     
-    tar czf "$destination" "$source"
+    # HACK: make the tar in a temp dir, supplying a path tars the path as well
+    local temp="$(mktemp -d)";    
+    
+    cp -vr "$source" "$temp";
+                
+    cd "$temp";
+    
+    local file="$(ls $temp)";
+    
+    tar czf "$file.tar.gz" "$file"
+        
+    cd -;            
+    
+    
+    cp -v "$temp/$file.tar.gz" "$destination"
 }
 
 # (String source, String destination)
@@ -180,7 +196,7 @@ function ARCHIVE::extract() {
     
     alert ARCHIVE "$file";
     
-    cp "$temp/$file" "$destination";
+    cp -vr "$temp/$file" "$destination";
     
     
     rm -r "$temp";
