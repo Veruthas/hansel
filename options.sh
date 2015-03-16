@@ -8,7 +8,7 @@ global -A OPTIONS;
 
 
 # (String option_name)
-function add_option() {
+function OPTIONS::add() {
 
     local option="$1";
 
@@ -19,41 +19,36 @@ function add_option() {
 }
 
 # (String option, ...)
-function process_line() {
+function OPTIONS::process_line() {
     
     OPTIONS::on_preprocess "$@";
     
     # process options
-    process "$@";
+    OPTIONS::process "$@";
     
     OPTIONS::on_postprocess "$@";
 }
 
 
-global PROCESS_MISSING_OPTION=1;
-global PROCESS_INVALID_OPTION=2;
 
 # (String option, ...)
-function process() {
+function OPTIONS::process() {
 
     local option="$1";
     shift;
         
     if [[ -n "$option" ]] && [[ -n "${OPTIONS[$option]}" ]]; then
-        "option_${option}" "$@";
+        "OPTIONS::${option}" "$@";
     elif [[ -z "$option" ]]; then
         OPTIONS::on_missing;
-        return $PROCESS_MISSING_OPTION;
     else
         OPTIONS::on_invalid "$option" "$@";
-        return $PROCESS_INVALID_OPTION;
     fi
-
 }
 
 
 # (...) !! 1
-function verify_no_args() {
+function OPTIONS::verify_no_args() {
     
     [[ -n "$@" ]] && terminate 1 "Extra arguments found '$@'"    
 
@@ -71,24 +66,25 @@ function OPTIONS::on_postprocess() {
 }
 
 
+
 # virtual | () !! 1
 function OPTIONS::on_missing() {
-    terminate $PROCESS_MISSING_OPTION "no option supplied";    
+    terminate 1 "no option supplied";    
 }
 
-# virtual | (String option, ...) !! 1
+# virtual | (String option, ...) !! 2
 function OPTIONS::on_invalid() {
 
     local option="$1";
     shift;
 
-    terminate $PROCESS_INVALID_OPTION "invalid option: $option";
+    terminate 2 "invalid option: $option";
 }
 
 
 
 # () -> loads option files
-function load_options() {    
+function OPTIONS::load() {    
     local option_glob="$SCRIPT_PATH/options/*";
     local option_file=;
     
@@ -105,4 +101,4 @@ function load_options() {
     alert OPTIONS "$added"
 }
 
-load_options;
+OPTIONS::load;

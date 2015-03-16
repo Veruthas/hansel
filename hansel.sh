@@ -43,4 +43,4 @@ function FILES::repository_path() {
 fi
 
 # MAIN
-process_line "$@";
+OPTIONS::process_line "$@";

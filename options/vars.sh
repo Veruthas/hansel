@@ -10,11 +10,12 @@ global VARS_LOADED;
 
 
 # ([--as <value> | --from <command>], String... name) -> VARS[name...]=true|from|as
-add_option 'set';
-function option_set() {
+OPTIONS::add 'set';
+function OPTIONS::set() {
+
     alert OPTIONS_VARS 'in option_set';
     
-    load_vars;
+    VARS::load_vars;
     
     local value=;
     
@@ -45,16 +46,17 @@ function option_set() {
     
     done
     
-    save_vars;
-    list_vars;
+    VARS::save_vars;
+    VARS::list_vars;
 }
 
 # (String... name) -> unset VARS[name...]
-add_option 'unset';
-function option_unset() {
+OPTIONS::add 'unset';
+function OPTIONS::unset() {
+
     alert OPTIONS_VARS 'in option_unset';
     
-    load_vars;
+    VARS::load_vars;
     
     while [[ -n "$1" ]]; do
     
@@ -68,39 +70,40 @@ function option_unset() {
     done
     
     
-    save_vars;
-    list_vars;
+    VARS::save_vars;
+    VARS::list_vars;
 }
 
 # (String... vars) -> >&1
-add_option 'vars';
-function option_vars() {
+OPTIONS::add 'vars';
+function OPTIONS::vars() {
     alert OPTIONS_VARS 'in option_vars';
     
-    load_vars;
+    VARS::load_vars;
     
-    list_vars "$@";
+    VARS::list_vars "$@";
 }
 
 
 # (<var> ...) -> if var defined ...
-add_option 'on';
-function option_on() {
+OPTIONS::add 'on';
+function OPTIONS::on() {
     alert OPTIONS_VARS 'in option_on'
     
-    load_vars;
+    VARS::load_vars;
     
     local name="$1";
     shift;
     
     if [[ -n "${VARS[$name]}" ]]; then
-        process "$@";
+        OPTIONS::process "$@";
     fi
 }
 
 
+
 # () -> VARS < var_file
-function load_vars() {
+function VARS::load_vars() {
     alert OPTIONS_VARS 'in load_vars';
     
     if [[ -z "$VARS_LOADED" ]]; then
@@ -133,7 +136,7 @@ function load_vars() {
 }
 
 # () -> >var_file
-function save_vars() {
+function VARS::save_vars() {
     alert OPTIONS_VARS 'in save_vars';
     
     local var_file="$(VARS::var_file)";    
@@ -153,7 +156,7 @@ function save_vars() {
 }
 
 # (String... names) ->  >&1
-function list_vars() {
+function VARS::list_vars() {
     alert OPTIONS_VARS 'in list_vars';
     
     if (( ${#VARS[@]} == 0 )); then
@@ -166,11 +169,11 @@ function list_vars() {
         if [[ -n "$1" ]]; then
             while [[ -n "$1" ]]; do
                 name="$1"; shift;
-                list_var "$name";
+                VARS::list_var "$name";
             done
         else
             for name in "${!VARS[@]}"; do
-                list_var "$name";
+                VARS::list_var "$name";
             done
         fi
     fi
@@ -178,7 +181,7 @@ function list_vars() {
 }
 
 # (String name) -> show_var name [name] >&1
-function list_var() {
+function VARS::list_var() {
     alert OPTIONS_VARS 'in list_var';
     local name="$1";
     local value="${VARS[$1]}";

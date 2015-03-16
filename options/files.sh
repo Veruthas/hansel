@@ -10,9 +10,11 @@ function FILES::repository_path() {
     echo "$HOME/.hansel_archives";
 }
 
+
 # (String source, String name, int? id) -> archives source to name/id
-add_option 'import';
-function option_import() {
+OPTIONS::add 'import';
+function OPTIONS::import() {
+
     alert FILES 'in option_import';
     
     local source="$1";
@@ -33,8 +35,9 @@ function option_import() {
 }
 
 # (String destination, String name, int? id) -> extracts name/id to destination
-add_option 'export';
-function option_export() {
+OPTIONS::add 'export';
+function OPTIONS::export() {
+
     alert FILES 'in option_export';
 
     local dest="$1";
@@ -54,8 +57,9 @@ function option_export() {
 }
 
 # (String name, int? id)
-add_option 'remove'; 
-function option_remove() {
+OPTIONS::add 'remove'; 
+function OPTIONS::remove() {
+
     alert FILES 'in option_remove';
     
     local name="$1";    
@@ -68,8 +72,9 @@ function option_remove() {
 }
 
 # (String? name) -> prints files or file versions >&1
-add_option 'files';
-function option_files() {
+OPTIONS::add 'files';
+function OPTIONS::files() {
+
     local name="$1";
     
     local repo_path="$(FILES::repository_path)";
