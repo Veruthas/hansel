@@ -182,7 +182,11 @@ function terminate() {
 
     local error="$1";
     local message="$2";
-    error "$error" "$message" "true";
+    error "$error" "$message" "true";    
+}
+
+function terminate_error() {
+    exit "$ERROR_ID";
 }
 
 # (bool condition, int error, String message)

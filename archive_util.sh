@@ -12,12 +12,13 @@
 ## file_path => tar'd file or directory (renamed with an id)
 ## repo_path/archive_name/ids...
 
-debug_on ARCHIVE;
+debug_off ARCHIVE;
 
+# TODO: much better errors+checking (does dir exist, etc)
 
 # (String archive_path) => int id
 function ARCHIVE::get_last_id() {
-    alert ARCHIVE 'in ARCHIVE::get_highest_id';
+    alert ARCHIVE 'in ARCHIVE::get_last_id';
     
     local archive_path="$1";    
     local highest=;
@@ -149,6 +150,54 @@ function ARCHIVE::export_file() {
     
 }
 
+# (String repo_path, String archive_name, int? id)
+function ARCHIVE::remove_file() {
+    alert ARCHIVE 'in ARCHIVE::remove_file';
+    
+    local repo_path="$1";
+    local archive_name="$2";
+    local id="$3";
+    
+    local archive_path="$(ARCHIVE::get_archive_path $repo_path $archive_name)";
+    [[ -z "$id" ]] && id="$(ARCHIVE::get_last_id $archive_path)"
+    
+    
+    # remove file
+    local file_name="$archive_path/$id";
+    rm -r "$file_name"
+    alert ARCHIVE "'$repo_path', '$archive_name', '$archive_path', '$id'";
+    
+    # rm archive if no files left
+    [[ -z $(ls "$archive_path") ]] && rm -r "$archive_path";
+}
+
+# (String repo_path, String? archive_name)
+function ARCHIVE::list_files() {
+    alert ARCHIVE 'in ARCHIVE::list_files'
+    
+    local repo_path="$1";
+    
+    local archive_name="$2";
+    
+    if [[ -z "$archive_name" ]]; then
+        if [[ -z $(ls "$repo_path") ]]; then
+            echo "<no archives>";
+        else
+            echo "<archives>"
+            for archive in "$(ls "$repo_path")"; do
+                echo "  $archive";
+            done
+        fi
+    else
+        local archive_path="$repo_path/$archive_name";
+        
+        echo "<$archive_name>";
+        for file in "$(ls $archive_path)"; do
+            echo "  $file";
+        done
+    fi
+}
+
 
 # TODO: Should I create the dirname of destination?
 # (String source, String destination) 
@@ -201,3 +250,4 @@ function ARCHIVE::extract() {
     
     rm -r "$temp";
 }
+

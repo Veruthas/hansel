@@ -22,6 +22,8 @@ function option_import() {
     local repository_path="$(FILES::repository_path)";
     
     ARCHIVE::import_file "$source" "$(FILES::repository_path)" "$name" "$id";
+    (( $? != 0 )) && terminate_error;
+    
     
     local archive_path="$repository_path/$name/$id";
     
@@ -42,7 +44,7 @@ function option_export() {
     local repository_path="$(FILES::repository_path)";
     
     ARCHIVE::export_file "$dest" "$repository_path" "$name" "$id";
-    
+    (( $? != 0 )) && terminate_error;
     
     local archive_path="$(ARCHIVE::get_archive_path $repository_path $name)";
     
@@ -54,16 +56,23 @@ function option_export() {
 # (String name, int? id)
 add_option 'remove'; 
 function option_remove() {
-    local name="$1";
+    alert FILES 'in option_remove';
     
-    local 
+    local name="$1";    
+    local id="$2";
+    
+    local repo_path="$(FILES::repository_path)";
+    
+    ARCHIVE::remove_file "$repo_path" "$name" "$id";    
+    (( $? != 0 )) && terminate_error;
 }
 
 # (String? name) -> prints files or file versions >&1
 add_option 'files';
 function option_files() {
     local name="$1";
+    
     local repo_path="$(FILES::repository_path)";
     
-    ARCHIVE::display_files "$repo_path" "$name";
+    ARCHIVE::list_files "$repo_path" "$name";
 }
