@@ -2,7 +2,7 @@
 
 ## Implements Options API
 
-debug_off OPTIONS
+DEBUG::off OPTIONS
 
 global -A OPTIONS;
 

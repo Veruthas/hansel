@@ -2,7 +2,7 @@
 
 ## Implements options for files (import, export, TODO: editing)
 
-debug_off OPTIONS_FILES
+DEBUG::off OPTIONS_FILES
 
 
 # virtual | () => repository_path

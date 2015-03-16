@@ -12,7 +12,7 @@
 ## file_path => tar'd file or directory (renamed with an id)
 ## repo_path/archive_name/ids...
 
-debug_off ARCHIVE;
+DEBUG::off ARCHIVE;
 
 # TODO: much better errors+checking (does dir exist, etc)
 

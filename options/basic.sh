@@ -2,7 +2,7 @@
 
 ## Implements options for generic functionality (do,if,ignore,pause)
 
-debug_off OPTIONS_BASIC;
+DEBUG::off OPTIONS_BASIC;
 
 # (String command) -> eval command
 add_option 'do';

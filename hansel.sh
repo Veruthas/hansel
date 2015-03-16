@@ -5,10 +5,6 @@ shopt -s expand_aliases
 alias global='declare -g';
 
 
-# DEBUG
-declare DEBUG=true;
-
-
 # VARIABLES
 global -r SCRIPT_PATH="$(realpath $(dirname $0))"
 
@@ -29,10 +25,12 @@ source "$SCRIPT_PATH/options.sh";
 
 
 # MISC SETUP
-if [[ -n $DEBUG ]]; then
+DEBUG::on;
 
-debug_simple_header
-error_simple_header
+if DEBUGGING; then
+
+DEBUG::set_simple_header
+ERROR::set_simple_header
 
 function VARS::var_file() {
     echo "$SCRIPT_PATH/../vars";

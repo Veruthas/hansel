@@ -10,14 +10,8 @@ global DEBUG_FLAG_HEADER;
 global DEBUG_FILE;
 global DEBUG_SILENT;
 
-global -A DEBUG_FLAGS=([-]=true);
+global -A DEBUG_FLAGS=();
 
-function DEBUG::print_args() {
-    echo PRINTING ARGS >&2;
-    for arg in "$@"; do 
-        echo $arg >&2;
-    done
-}
 
 # (String flag, String message) > message
 # - is the default flag
@@ -33,7 +27,7 @@ function alert() {
         message="$2";        
     fi
         
-    alert_echo "$flag" "$message";
+    DEBUG::alert_echo "$flag" "$message";
 }
 
 # (bool condition, String flag, String true, String false) ?> message
@@ -57,68 +51,76 @@ function check() {
     eval "$condition";
     
     if [[ "$?" == '0' ]]; then
-        alert_echo "$flag" "$true_msg"
+        DEBUG::alert_echo "$flag" "$true_msg"
     else
-        alert_echo "$flag" "$false_msg";
+        DEBUG::alert_echo "$flag" "$false_msg";
     fi
 }
 
 # (String flag, String message) > message
-function alert_echo() {
+function DEBUG::alert_echo() {
     
-    local flag="$1";
-    
-    local message="$2";
-    
-    if [[ -n "${DEBUG_FLAGS[$flag]}" ]]; then        
-        message="$(make_debug_header $flag)'$message'";
+    if DEBUGGING; then
+        local flag="$1";
+        
+        local message="$2";
+        
+        if [[ -n "${DEBUG_FLAGS[$flag]}" ]]; then        
+            message="$(DEBUG::make_debug_header $flag)'$message'";
 
-        [[ -z "$DEBUG_SILENT" ]] && echo "$message" >&2;        
-        [[ -n "$DEBUG_FILE" ]] && echo "$message" >> "$DEBUG_FILE";
+            [[ -z "$DEBUG_SILENT" ]] && echo "$message" >&2;        
+            [[ -n "$DEBUG_FILE" ]] && echo "$message" >> "$DEBUG_FILE";
 
-    fi
+        fi
+    fi;
+}
+
+# (flag?) -> DEBUG_FLAGS[-]==true
+function DEBUGGING() {
+    local flag="${1:--}";
+    [[ -n "${DEBUG_FLAGS["$flag"]}" ]] && return 0 || return 1;
 }
 
 # ([flag]) -> DEBUG_FLAG[$flag]=true
-function debug_on() {
+function DEBUG::on() {
     local flag="${1:--}";
     
     DEBUG_FLAGS[$flag]=true;
 }
 
 # ([flag]) -> DEBUG_FLAG[$flag]=true
-function debug_off() {
+function DEBUG::off() {
     local flag=${1:--};
     
     unset DEBUG_FLAGS[$flag];
 }
 
 # () -> DEBUG_SILENT=true
-function debug_silent() {
+function DEBUG::silent() {
     DEBUG_SILENT=true;
 }
 
 # () -> DEBUG_SILENT=
-function debug_noisy() {
+function DEBUG::noisy() {
     unset DEBUG_SILENT;
 }
 
 
 # (String header) -> DEBUG_HEADER=header
 # %flag% => where flag header should go
-function debug_header() {
+function DEBUG::set_header() {
     DEBUG_HEADER="$@";
 }
 
 # (String header) -> DEBUG_FLAG_HEADER=header
 # Conditional if flag invoked
 # %flag% => where flag should go
-function debug_flag_header() {
+function DEBUG::set_flag_header() {
     DEBUG_FLAG_HEADER="$@";
 }
 
 # (String flag) => String header
-function make_debug_header() {
+function DEBUG::make_debug_header() {
     
     local flag="$1";
     local flag_mark="%flag%"    
@@ -132,14 +134,14 @@ function make_debug_header() {
 }
 
 # () -> debug_header,debug_flag_header
-function debug_simple_header() {
-    debug_header 'debug%flag%: ';
-    debug_flag_header ' <%flag%>';
+function DEBUG::set_simple_header() {
+    DEBUG::set_header 'debug%flag%: ';
+    DEBUG::set_flag_header ' <%flag%>';
 }
 
 
-# (String file) -> DEBUG_File=file
-function debug_file() {
+# (String file) -> DEBUG_FILE=file
+function DEBUG::set_file() {
     local file="$@";
     
     DEBUG_FILE="$file";
@@ -150,46 +152,55 @@ function debug_file() {
 
 #region ERRORS
 
-declare ERROR_HEADER=;
+global ERROR_HEADER=;
 
-declare ERROR_SILENT=;
-declare ERROR_FILE=;
+global ERROR_SILENT=;
+global ERROR_FILE=;
 
-declare ERROR_ID=;
-declare ERROR_MESSAGE=;
+global ERROR_ID=;
+global ERROR_MESSAGE=;
 
-# (int error, String message, bool? quit)
+
+# (int error, String message, String... args)
 function error() {
-    
-    ERROR_ID="${1:-0}";
-    ERROR_MESSAGE="$2";
-    local quit="$3";
-    
-    local id_mark='%id%';    
-    local header="${ERROR_HEADER//$id_mark/$ERROR_ID}";
-    
-    local message="$header$ERROR_MESSAGE";
-    
-    [[ -z "$ERROR_SILENT" ]] && echo "$message" >&2;
-    [[ -n "$ERROR_FILE" ]] && echo $message >> "$ERROR_FILE";
-    
-    
-    [[ -z "$quit" ]] && return "$ERROR_ID" || exit "$ERROR_ID";
-}
-
-# (int error, String message)
-function terminate() {
-
-    local error="$1";
+    local id="$1";
     local message="$2";
-    error "$error" "$message" "true";    
+    shift 2;
+    
+    ERROR_ID="${id:-0}";
+    ERROR_MESSAGE=$(printf "$message" "$@");
+    
+    return "$ERROR_ID";
 }
 
-function terminate_error() {
+# (int error, String message, String... args)
+function throw() {
+    
+    [[ -n "$@" ]] && error "$@";
+    
+    ERROR::display;    
+    
+    return "$ERROR_ID";
+}
+
+
+# ([int error, String message, String... args]) -> error
+function quit() {
+    [[ -n "$@" ]] && error "$@";
+    
     exit "$ERROR_ID";
 }
 
-# (bool condition, int error, String message)
+# ([int error, String message, String... args]) -> throw
+function terminate() {
+
+    [[ -n "$@" ]] && throw "$@";
+    
+    exit "$ERROR_ID";
+}
+
+
+# (bool condition, int error, String message, String... args) -> terminate
 function assert() {
     local condition="$1";
     shift;
@@ -198,19 +209,34 @@ function assert() {
     [[ "$?" != '0' ]] && terminate "$@";
 }
 
+
+# () -> errors >&2
+function ERROR::display() {
+
+    local id_mark='%id%';    
+    local header="${ERROR_HEADER//$id_mark/$ERROR_ID}";
+    
+    local message="$header$ERROR_MESSAGE";
+    
+    
+    [[ -z "$ERROR_SILENT" ]] && echo "$message" >&2;
+    [[ -n "$ERROR_FILE" ]] && echo $message >> "$ERROR_FILE";
+}
+
+
 # () -> ERROR_SILET=true
-function error_silent() {
+function ERROR::silent() {
     ERROR_SILENT=true;
 }
 
 # () -> unset ERROR_SILENT
-function error_noisy() {
+function ERROR::noisy() {
     unset ERROR_SILENT;
 }
 
 
 # (String file) -> ERROR_FILE=file
-function error_file() {
+function ERROR::set_file() {
     local file="$@";
     
     ERROR_FILE="$file";
@@ -218,15 +244,15 @@ function error_file() {
 
 # (String header) -> ERROR_HEADER=header
 # %id% -> ERROR ID 
-function error_header() {    
+function ERROR::set_header() {    
     
     local header="$1";
     
     ERROR_HEADER="$header";
 }
 
-function error_simple_header() {
-    error_header "error: "
+function ERROR::set_simple_header() {
+    ERROR::set_header "error: "
 }
 
 #endregion
@@ -235,26 +261,26 @@ function error_simple_header() {
 
 global ERROR_MISSING_ARG_ID=1;
 
-# (String arg_name, bool? quit)
+# (String arg_name, bool throw)
 function ERROR::missing_arg() {
     local arg_name="$1";
-    local quit="$2";
+    local throw="$2";
     
     local message="missing argument <$arg_name>";
     
-    error "$ERROR_MISSING_ARG_ID" "$message" "$quit";
+    error "$ERROR_MISSING_ARG_ID" "$message";
 }
 
 global ERROR_PATH_NO_EXIST=2;
 
-# (String path, bool? quit)
+# (String path, bool throw)
 function ERROR::path_no_exist() {
     local path="$1";
-    local quit="$2";
+    local throw="$2";
     
     local message="path <$path> does not exist";
     
-    error "$ERROR_PATH_NO_EXIST" "$message" "$quit";
+    error "$ERROR_PATH_NO_EXIST" "$message";
 }
 
 #endregion
