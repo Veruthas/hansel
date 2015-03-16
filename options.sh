@@ -7,6 +7,11 @@ DEBUG::off OPTIONS
 global -A OPTIONS;
 
 
+global -a OPTIONS_PREPROCESS;
+
+global -a OPTIONS_POSTPROCESS;
+
+
 # (String option_name)
 function OPTIONS::add() {
 
@@ -21,12 +26,12 @@ function OPTIONS::add() {
 # (String option, ...)
 function OPTIONS::process_line() {
     
-    OPTIONS::on_preprocess "$@";
+    OPTIONS::preprocess "$@";
     
     # process options
     OPTIONS::process "$@";
     
-    OPTIONS::on_postprocess "$@";
+    OPTIONS::postprocess "$@";
 }
 
 
@@ -55,21 +60,48 @@ function OPTIONS::verify_no_args() {
 }
 
 
-# virtual | (...) 
-function OPTIONS::on_preprocess() {
-    alert OPTIONS "in preprocess";
+# (String function)
+function OPTIONS::add_preprocess() {
+    alert OPTIONS "in OPTIONS::add_preprocess";
+
+    local func="$1";
+    
+    OPTIONS_PREPROCESS+=("$func");
 }
 
-# virtual | (...)
-function OPTIONS::on_postprocess() {
-    alert OPTIONS "in postprocess";
+# (String function)
+function OPTIONS::add_postprocess() {
+    alert OPTIONS "in OPTIONS::add_postprocess";
+    
+    local func="$1";
+    
+    OPTIONS_POSTPROCESS+=("$func");
+}
+
+
+# (...) 
+function OPTIONS::preprocess() {
+    alert OPTIONS "in OPTIONS::preprocess";
+
+    for func in "${OPTIONS_PREPROCESS[@]}"; do
+        $func "$@";
+    done
+}
+
+# (...)
+function OPTIONS::postprocess() {
+    alert OPTIONS "in OPTIONS::postprocess";
+
+    for func in "${OPTIONS_POSTPROCESS[@]}"; do
+        $func "$@";
+    done 
 }
 
 
 
 # virtual | () !! 1
 function OPTIONS::on_missing() {
-    terminate 1 "no option supplied";    
+    terminate 1 "no option given";    
 }
 
 # virtual | (String option, ...) !! 2
@@ -82,7 +114,6 @@ function OPTIONS::on_invalid() {
 }
 
 
-
 # () -> loads option files
 function OPTIONS::load() {    
     local option_glob="$SCRIPT_PATH/options/*";
@@ -92,7 +123,7 @@ function OPTIONS::load() {
         [[ "$option_file" == "$option_glob" ]] && break;
         alert OPTIONS "loading <$(basename $option_file)> @ <$(dirname $option_file)>";
         source "$option_file";
-        alert OPTIONS ' ';
+        alert OPTIONS ' ';                
     done
     
     

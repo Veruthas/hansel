@@ -25,7 +25,7 @@ function OPTIONS::if() {
     
     eval "$condition";
     
-    [[ "$?" == 0 ]] && process "$@";
+    [[ "$?" == 0 ]] && OPTIONS::process "$@";
 }
 
 
@@ -35,7 +35,7 @@ function OPTIONS::ignore() {
     
     alert OPTIONS_BASIC "in ignore"
     
-    process "$@";
+    OPTIONS::process "$@";
 }
 
 
@@ -49,3 +49,5 @@ function OPTIONS::pause() {
     
     read -p "$prompt";        
 }
+
+# TODO: Some sort of ask?

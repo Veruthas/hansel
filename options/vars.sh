@@ -219,3 +219,6 @@ function VARS::var_file() {
     alert OPTIONS_VARS 'in VARS::var_file';
     echo "/dev/null";
 }
+
+
+OPTIONS::add_preprocess "VARS::load_vars";

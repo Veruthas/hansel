@@ -42,5 +42,10 @@ function FILES::repository_path() {
 
 fi
 
+
 # MAIN
-OPTIONS::process_line "$@";
+function HANSEL::main() {
+    OPTIONS::process_line "$@";
+}
+
+HANSEL::main "$@";
