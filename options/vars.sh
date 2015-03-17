@@ -220,5 +220,15 @@ function VARS::var_file() {
     echo "/dev/null";
 }
 
+# (String name)
+function VAR(){
+    alert VARS 'in VAR';
+    
+    VARS::load_vars;
+    
+    local name="$1";    
+    
+    echo "${VARS[$name]}";
+}
 
-OPTIONS::add_preprocess "VARS::load_vars";
+#OPTIONS::add_preprocess "VARS::load_vars";
