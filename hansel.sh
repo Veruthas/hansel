@@ -36,9 +36,6 @@ function VARS::var_file() {
     echo "$SCRIPT_PATH/../vars";
 }
 
-function FILES::repository_path() {
-    echo "$SCRIPT_PATH/../storage"
-}
 
 fi
 
@@ -49,3 +46,8 @@ function HANSEL::main() {
 }
 
 HANSEL::main "$@";
+
+global storage="$SCRIPT_PATH/../storage"
+
+
+

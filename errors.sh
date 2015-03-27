@@ -163,12 +163,7 @@ global ERROR_MESSAGE=;
 
 # (int error, String message, String... args)
 function error() {
-    local id="$1";
-    local message="$2";
-    shift 2;
-    
-    ERROR_ID="${id:-0}";
-    ERROR_MESSAGE=$(printf "$message" "$@");
+    [[ -n "$@" ]] && ERROR::set_error "$@";
     
     return "$ERROR_ID";
 }
@@ -176,7 +171,7 @@ function error() {
 # (int error, String message, String... args)
 function throw() {
     
-    [[ -n "$@" ]] && error "$@";
+    [[ -n "$@" ]] && ERROR::set_error "$@";
     
     ERROR::display;    
     
@@ -186,6 +181,7 @@ function throw() {
 
 # ([int error, String message, String... args]) -> error
 function quit() {
+    # TODO: Does this have any purpose?
     [[ -n "$@" ]] && error "$@";
     
     exit "$ERROR_ID";
@@ -209,6 +205,21 @@ function assert() {
     [[ "$?" != '0' ]] && terminate "$@";
 }
 
+
+# (int id, String msg, String... args) -> ERROR_ID, ERROR_MSG
+function ERROR::set_error() {
+    local id="$1";
+    local message="$2";
+    shift 2;
+    
+    ERROR_ID="${id:-0}";
+    ERROR_MESSAGE=$(printf "$message" "$@");
+}
+
+# ()
+function ERROR::clear() {
+    error;
+}
 
 # () -> errors >&2
 function ERROR::display() {
@@ -269,6 +280,10 @@ function ERROR::missing_arg() {
     local message="missing argument <$arg_name>";
     
     error "$ERROR_MISSING_ARG_ID" "$message";
+    
+    [[ -n "$throw" ]] && throw;
+    
+    return "$ERROR_ID";
 }
 
 global ERROR_PATH_NO_EXIST=2;
@@ -281,6 +296,26 @@ function ERROR::path_no_exist() {
     local message="path <$path> does not exist";
     
     error "$ERROR_PATH_NO_EXIST" "$message";
+    
+    [[ -n "$throw" ]] && throw;
+    
+    return "$ERROR_ID";
+}
+
+global ERROR_FILE_NO_EXIST=3;
+
+# (String file, bool throw)
+function ERROR::file_no_exist() {
+    local file="$1";
+    local throw="$2";
+    
+    local message="file <$file> does not exist";
+    
+    error "$ERROR_FILE_NO_EXIST" "$message";
+    
+    [[ -n "$throw" ]] && throw;
+    
+    return "$ERROR_ID";
 }
 
 #endregion

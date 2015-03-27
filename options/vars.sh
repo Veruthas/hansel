@@ -217,7 +217,7 @@ function VARS::show_var() {
 # virtual | () => var_file
 function VARS::var_file() {
     alert OPTIONS_VARS 'in VARS::var_file';
-    echo "/dev/null";
+    echo "$HOME/.hansel/vars";
 }
 
 # (String name)
