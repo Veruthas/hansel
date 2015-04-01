@@ -12,12 +12,12 @@ global -a SCRIPT_ARGUMENTS=("$@");
 
 
 # IMPORTS
-source "$SCRIPT_PATH/errors.sh";
+source "$SCRIPT_PATH/lib/errors.sh";
 
+# util
+source "$SCRIPT_PATH/lib/util.sh"
 
-source "$SCRIPT_PATH/util/util.sh"
-
-source "$SCRIPT_PATH/util/archive_util.sh";
+source "$SCRIPT_PATH/lib/archive_util.sh";
 
 
 source "$SCRIPT_PATH/options.sh";
