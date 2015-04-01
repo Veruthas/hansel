@@ -15,9 +15,9 @@ global -a SCRIPT_ARGUMENTS=("$@");
 source "$SCRIPT_PATH/errors.sh";
 
 
-source "$SCRIPT_PATH/util.sh"
+source "$SCRIPT_PATH/util/util.sh"
 
-source "$SCRIPT_PATH/archive_util.sh";
+source "$SCRIPT_PATH/util/archive_util.sh";
 
 
 source "$SCRIPT_PATH/options.sh";
