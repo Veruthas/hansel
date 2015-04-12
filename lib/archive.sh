@@ -12,6 +12,8 @@
 ## file_path => tar'd file or directory (renamed with an id)
 ## repo_path/archive_name/ids...
 
+[[ -z "$ARCHIVE" ]] && declare ARCHIVE=true || return;
+
 DEBUG::on ARCHIVE;
 
 

@@ -2,6 +2,8 @@
 
 ## Implements debug/error system
 
+[[ -z "$ERRORS" ]] && declare ERRORS=true || return;
+
 #region DEBUG
 
 global DEBUG_HEADER;

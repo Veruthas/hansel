@@ -2,8 +2,10 @@
 
 ## Basic utility functions
 
+[[ -z "$UTIL" ]] && declare UTIL=true || return;
+
 # (String text) => String flattened 
-function flatten() {
+function UTIL::flatten() {
     local text="$@"
     text="${@//$'\n'/\\n}";
     text="${text//$'\t'/\\t}";
@@ -11,6 +13,6 @@ function flatten() {
 }
 
 # (String flattened) => String text
-function expand() {    
+function UTIL::expand() {    
     echo -e "$@";
 }
