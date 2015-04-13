@@ -20,7 +20,7 @@ source "$SCRIPT_PATH/lib/util.sh"
 
 source "$SCRIPT_PATH/lib/archive.sh";
 
-source "$SCRIPT_PATH/lib/sync.sh"
+source "$SCRIPT_PATH/lib/nodes.sh"
 
 
 source "$SCRIPT_PATH/options.sh";
@@ -40,6 +40,11 @@ function VARS::var_file() {
 }
 
 
+#tmp=$(mktemp -d);
+tmp=/tmp/tmp.2qLK41Acpx;
+
+
+
 fi
 
 
@@ -49,8 +54,3 @@ function HANSEL::main() {
 }
 
 HANSEL::main "$@";
-
-global storage="$SCRIPT_PATH/../storage"
-
-
-

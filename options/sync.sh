@@ -6,3 +6,7 @@
 ## as well as parent sync nodes and child syncs
 DEBUG::off SYNC
 
+OPTIONS::add 'sync' 'SYNC::sync'
+function SYNC::sync() {
+:
+}

@@ -10,8 +10,8 @@ global VARS_LOADED;
 
 
 # ([--as <value> | --from <command>], String... name) -> VARS[name...]=true|from|as
-OPTIONS::add 'set';
-function OPTIONS::set() {
+OPTIONS::add 'set' 'VARS::set';
+function VARS::set() {
 
     alert OPTIONS_VARS 'in option_set';
     
@@ -51,8 +51,8 @@ function OPTIONS::set() {
 }
 
 # (String... name) -> unset VARS[name...]
-OPTIONS::add 'unset';
-function OPTIONS::unset() {
+OPTIONS::add 'unset' 'VARS::unset';
+function VARS::unset() {
 
     alert OPTIONS_VARS 'in option_unset';
     
@@ -75,8 +75,8 @@ function OPTIONS::unset() {
 }
 
 # (String... vars) -> >&1
-OPTIONS::add 'vars';
-function OPTIONS::vars() {
+OPTIONS::add 'vars' 'VARS::vars';
+function VARS::vars() {
     alert OPTIONS_VARS 'in option_vars';
     
     VARS::load_vars;
@@ -86,8 +86,8 @@ function OPTIONS::vars() {
 
 
 # (<var> ...) -> if var defined ...
-OPTIONS::add 'on';
-function OPTIONS::on() {
+OPTIONS::add 'on' 'VARS::on';
+function VARS::on() {
     alert OPTIONS_VARS 'in option_on'
     
     VARS::load_vars;
@@ -120,10 +120,10 @@ function VARS::load_vars() {
                 unset name;
             else
                 if [[ -z "$name" ]]; then
-                    name="$(expand $line)";
+                    name="$(UTIL::expand $line)";
                 else            
                     alert OPTIONS_VARS "VARS[$name]=$line";
-                    VARS["$name"]="$(expand $line)";
+                    VARS["$name"]="$(UTIL::expand $line)";
                     unset name;
                 fi
             fi
@@ -148,8 +148,8 @@ function VARS::save_vars() {
     for name in "${!VARS[@]}"; do
         alert OPTIONS_VARS "subscript $name";
         value="${VARS[$name]}";
-        echo $(flatten "$name")  >> "$var_file";
-        echo $(flatten "$value") >> "$var_file";
+        echo $(UTIL::flatten "$name")  >> "$var_file";
+        echo $(UTIL::flatten "$value") >> "$var_file";
     done
         
     VARS_LOADED=true;

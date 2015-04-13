@@ -12,15 +12,15 @@ global -a OPTIONS_PREPROCESS;
 global -a OPTIONS_POSTPROCESS;
 
 
-# (String option_name)
+# (String option_name, String option funciton)
 function OPTIONS::add() {
 
     local option="$1";
-
+    local option_function="$2";
+    
     alert OPTIONS "adding <$option>";
     
-    OPTIONS["$option"]=true;
-
+    OPTIONS["$option"]="$option_function";
 }
 
 # (String option, ...)
@@ -43,7 +43,7 @@ function OPTIONS::process() {
     shift;
         
     if [[ -n "$option" ]] && [[ -n "${OPTIONS[$option]}" ]]; then
-        "OPTIONS::${option}" "$@";
+        "${OPTIONS[$option]}" "$@";
     elif [[ -z "$option" ]]; then
         OPTIONS::on_missing;
     else

@@ -4,6 +4,8 @@
 
 [[ -z "$UTIL" ]] && declare UTIL=true || return;
 
+alias global='declare -g';
+
 # (String text) => String flattened 
 function UTIL::flatten() {
     local text="$@"

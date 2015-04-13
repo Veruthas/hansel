@@ -166,7 +166,7 @@ global ERROR_MESSAGE=;
 # (int error, String message, String... args)
 function error() {
     [[ -n "$@" ]] && ERROR::set_error "$@";
-    
+    echo "'$@'" >&2
     return "$ERROR_ID";
 }
 
@@ -220,7 +220,8 @@ function ERROR::set_error() {
 
 # ()
 function ERROR::clear() {
-    error;
+    ERROR_ID=0;
+    ERROR_MESSAGE=;
 }
 
 # () -> errors >&2
