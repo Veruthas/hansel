@@ -18,8 +18,6 @@ source "$SCRIPT_PATH/lib/errors.sh";
 
 source "$SCRIPT_PATH/lib/util.sh"
 
-source "$SCRIPT_PATH/lib/archive.sh";
-
 source "$SCRIPT_PATH/lib/nodes.sh"
 
 
@@ -28,7 +26,7 @@ source "$SCRIPT_PATH/options.sh";
 
 
 # MISC SETUP
-DEBUG::on;
+DEBUG::off;
 
 if DEBUGGING; then
 
@@ -38,12 +36,6 @@ ERROR::set_simple_header
 function VARS::var_file() {
     echo "$SCRIPT_PATH/../vars";
 }
-
-
-#tmp=$(mktemp -d);
-tmp=/tmp/tmp.2qLK41Acpx;
-
-
 
 fi
 

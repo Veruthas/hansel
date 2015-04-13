@@ -5,8 +5,8 @@
 DEBUG::off OPTIONS_BASIC;
 
 # (String command) -> eval command
-OPTIONS::add 'do' 'BASIC::do';
-function BASIC::do() {
+OPTIONS::add 'do' 'BASIC::option_do';
+function BASIC::option_do() {
 
     alert OPTIONS_BASIC 'in do'
     
@@ -15,8 +15,8 @@ function BASIC::do() {
 
 
 # (String condition, ...) -> if condition ...
-OPTIONS::add 'if' 'BASIC::if';
-function BASIC::if() {
+OPTIONS::add 'if' 'BASIC::option_if';
+function BASIC::option_if() {
     
     local condition="$1";
     shift;
@@ -30,8 +30,8 @@ function BASIC::if() {
 
 
 # (...) -> ...
-OPTIONS::add 'ignore' 'BASIC::ignore';
-function BASIC::ignore() {
+OPTIONS::add 'ignore' 'BASIC::option_ignore';
+function BASIC::option_ignore() {
     
     alert OPTIONS_BASIC "in ignore"
     
@@ -40,8 +40,8 @@ function BASIC::ignore() {
 
 
 # (String? prompt) -> prompt
-OPTIONS::add 'pause' 'BASIC::pause';
-function BASIC::pause() {
+OPTIONS::add 'pause' 'BASIC::option_pause';
+function BASIC::option_pause() {
     
     local prompt="${1:-Press any key to continue...}";
     

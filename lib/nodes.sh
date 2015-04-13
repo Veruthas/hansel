@@ -78,8 +78,8 @@ function NODE::get_path() {
 
 
 # (String path) => int id -> create path/id
-function NODE::create() {
-    alert NODE "in NODE::create";
+function NODE::create_dir() {
+    alert NODE "in NODE::create_dir";
     
     local path="${1:-.}";
     local verbal="$2";
@@ -90,7 +90,7 @@ function NODE::create() {
     alert NODE "$node_path";
     
     ERROR::clear;    
-    local err_msg=$(mkdir "$node_path" 2>&1);
+    local err_msg=$(mkdir -p "$node_path" 2>&1);
     local err_no="$?";
     
     if (( err_no > 0 )); then
@@ -103,18 +103,22 @@ function NODE::create() {
 
 
 
-# (String path, int id) => int child_id
-function NODE::create_child() {
-    alert NODE "in NODE::create_child";
+# (String path, int parent_id) => int child_id
+function NODE::create() {
+    alert NODE "in NODE::create";
     
     local path="${1:-.}";
-    local id="$2";
     
-    local child_id=$(NODE::create "$path");
+    local parent_id="$2";
     
-    NODE::set_parent "$path" "$child_id" "$id";
+    local child_id=$(NODE::create_dir "$path");
     
-    NODE::add_child "$path" "$id" "$child_id";
+    if [[ -n $parent_id ]]; then
+    
+        NODE::set_parent "$path" "$child_id" "$id";
+    
+        NODE::add_child "$path" "$id" "$child_id";
+    fi
     
     echo $child_id;
 }

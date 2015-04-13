@@ -10,8 +10,8 @@ global VARS_LOADED;
 
 
 # ([--as <value> | --from <command>], String... name) -> VARS[name...]=true|from|as
-OPTIONS::add 'set' 'VARS::set';
-function VARS::set() {
+OPTIONS::add 'set' 'VARS::option_set';
+function VARS::option_set() {
 
     alert OPTIONS_VARS 'in option_set';
     
@@ -51,8 +51,8 @@ function VARS::set() {
 }
 
 # (String... name) -> unset VARS[name...]
-OPTIONS::add 'unset' 'VARS::unset';
-function VARS::unset() {
+OPTIONS::add 'unset' 'VARS::option_unset';
+function VARS::option_unset() {
 
     alert OPTIONS_VARS 'in option_unset';
     
@@ -75,8 +75,8 @@ function VARS::unset() {
 }
 
 # (String... vars) -> >&1
-OPTIONS::add 'vars' 'VARS::vars';
-function VARS::vars() {
+OPTIONS::add 'vars' 'VARS::option_vars';
+function VARS::option_vars() {
     alert OPTIONS_VARS 'in option_vars';
     
     VARS::load_vars;
@@ -86,8 +86,8 @@ function VARS::vars() {
 
 
 # (<var> ...) -> if var defined ...
-OPTIONS::add 'on' 'VARS::on';
-function VARS::on() {
+OPTIONS::add 'on' 'VARS::option_on';
+function VARS::option_on() {
     alert OPTIONS_VARS 'in option_on'
     
     VARS::load_vars;
