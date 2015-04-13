@@ -6,7 +6,7 @@ alias global='declare -g';
 
 
 # VARIABLES
-global -r SCRIPT_PATH="$(realpath $(dirname $0))"
+global -r SCRIPT_PATH="$(dirname $(realpath $0))"
 
 global -a SCRIPT_ARGUMENTS=("$@");
 
@@ -24,7 +24,6 @@ source "$SCRIPT_PATH/lib/nodes.sh"
 source "$SCRIPT_PATH/options.sh";
 
 
-
 # MISC SETUP
 DEBUG::off;
 
@@ -39,6 +38,7 @@ function VARS::var_file() {
 
 fi
 
+ERROR::set_simple_header
 
 # MAIN
 function HANSEL::main() {

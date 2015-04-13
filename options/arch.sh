@@ -5,6 +5,45 @@
 DEBUG::on "ARCH";
 
 
+# (String package, [--confirm]);
+OPTIONS::add 'install' 'ARCH::option_install';
+function ARCH::option_install() {
+
+    local package="$1";
+    
+    local confirm="$2";
+    
+    if [[ -n "$confirm" ]] && [[ "$confirm" != "--confirm" ]]; then
+        error 1 "Invalid option '$@'";
+    fi
+    
+    ARCH::install "$package" "$confirm"
+}
+
+# (String package, [--confirm]);
+OPTIONS::add 'aur' 'ARCH::option_aur';
+function ARCH::option_aur() 
+{
+    local package="$1";
+    
+    local confirm="$2";
+    
+    if [[ -n "$confirm" ]] && [[ "$confirm" != "--confirm" ]]; then
+        error 1 "Invalid option '$@'";
+    fi
+    
+    ARCH::aur "$package" "$confirm"
+}
+
+# (String name)
+OPTIONS::add 'category' 'ARCH::option_category';
+function ARCH::option_category() {
+    local name="$1";
+    
+    simple_log "category" "$name";
+}
+
+
 # virtual () => String log_file
 function ARCH::log_file() {
     echo "$HOME/.hansel/log_file"
@@ -20,6 +59,8 @@ function ARCH::aur_path() {
     echo "$HOME/.hansel/Aur"
 }
 
+
+
 global ARCH_REAL_PACKAGE_PATH="/var/cache/pacman/pkg";
 
 # (String package, bool confirm)
@@ -28,7 +69,7 @@ function ARCH::install() {
     
     local package="$1";
     
-    local confirm="$2";    
+    local confirm="$([[ -z $2 ]] && echo --noconfirm)";   
     
     local package_path="$(ARCH::package_path)";       
     
@@ -40,13 +81,12 @@ function ARCH::install() {
     sudo mount --bind "$package_path" "$ARCH_REAL_PACKAGE_PATH";
     
     
-    sudo pacman -S $package $([[ -z $confirm ]] && echo --noconfirm ) 2>/dev/null;
+    sudo pacman -S $package $confirm 2>/dev/null;
+    local err_no="$?";
     
     
     sudo umount "$ARCH_REAL_PACKAGE_PATH";
-        
-        
-    local err_no="$?";
+                    
         
     if (( err_no != 0 )); then
         
@@ -58,7 +98,6 @@ function ARCH::install() {
     fi
 }
 
-
 global ARCH_AUR_PACKAGE_URL="https://aur.archlinux.org/packages";
 global ARCH_ARM_AUR_PACKAGE_URL="http://seblu.net/a/archive/aur";
 
@@ -66,48 +105,74 @@ global ARCH_ARM_AUR_PACKAGE_URL="http://seblu.net/a/archive/aur";
 function ARCH::aur() {
     alert DEBUG "In ARCH::aur";
     
-    local package="$1";
+    local package="${1:-INVALID_PACKAGE}";
     
-    local confirm="$2";    
+    local confirm="$([[ -z $2 ]] && echo --noconfirm)";
     
-    local aur_path="$(ARCH::aur_path)";
     
-    local build_path="$aur_path/$package";
+    local aur_path="$(realpath $(ARCH::aur_path))";
+    
+    local package_path="$aur_path/$package";
+    
+    local build_path="$package_path/.build";
+    
     
     local current_path=$(pwd);
     
     
+    local err_no;
+    
+    
     if [[ ! -e "$build_path" ]]; then
-        mkdir -pv "$build_path/.build";
-        
-        cd "$build_path/.build";
+        mkdir -pv "$build_path";
+    fi
+    
+    # if the package has not been downloaded yet
+    if [[ ! -e $build_path/$package.tar.gz ]]; then
+    
+        cd "$build_path";
         
         
         aur_url="$ARCH_ARM_AUR_PACKAGE_URL/$(cat /etc/pacman.d/server_date)";
         
         aur_url+="/${package:0:2}/$package/$package.tar.gz";
         
-        # TODO: error point
+        
         wget "$aur_url";
         
-        tar -zxf "$package.tar.gz";
+        err_no="$?";
         
+        (( $? != 0 )) && error "$err_no" "Could not find package '$package'." && return $err_no;
         
-        cd "$package";
+        tar -zxf "$package.tar.gz";                
         
-        # TODO: error point
-        makepkg --asroot $([[ -z $confirm ]] && echo --noconfirm );
-        
-        chmod -v 755 *.pkg.tar.xz;
-        
-        mv -v *.pkg.tar.xz "../";
-                
+        cd -;
     fi
     
-    cd "$build_path/";
+    local file=$(ls "$package_path"/*.pkg.tar.xz 2>/dev/null);
     
-    # TODO: error point
-    pacman -U *.pkg.tar.xz $([[ -z $confirm ]] && echo --noconfirm );
+    # if the package has not been built yet
+    if (( $? != 0 )); then
+        
+        cd "$build_path/$package";
+        
+        makepkg --asroot "$confirm"
+        
+        (( $? != 0 )) && error "$err_no" "Could not build package '$package'." && return $err_no;
+        
+        file=$(ls *.pkg.tar.xz);                
+    
+        chmod -v 755 "$file";
+    
+        mv -v "$file" "../../";
+    
+        file=$(ls "$package_path"/*.pkg.tar.xz);
+        
+        cd -;
+    fi
+        
+             
+    pacman -U "$package_path/$file" "$confirm"
         
     cd "$current_path";
     
