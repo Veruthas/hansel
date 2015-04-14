@@ -189,6 +189,17 @@ function VARS::list_var() {
 }
 
 
+# (String name)
+function VAR(){
+    alert VARS 'in VAR';
+    
+    VARS::load_vars;
+    
+    local name="$1";    
+    
+    echo "${VARS[$name]}";
+}
+
 
 # virtual | () -> >&1
 function VARS::show_empty() {
@@ -214,21 +225,10 @@ function VARS::show_var() {
     echo " [$name] = '$value'";
 }
 
+
 # virtual | () => var_file
 function VARS::var_file() {
     alert OPTIONS_VARS 'in VARS::var_file';
     echo "$HOME/.hansel/vars";
 }
 
-# (String name)
-function VAR(){
-    alert VARS 'in VAR';
-    
-    VARS::load_vars;
-    
-    local name="$1";    
-    
-    echo "${VARS[$name]}";
-}
-
-#OPTIONS::add_preprocess "VARS::load_vars";

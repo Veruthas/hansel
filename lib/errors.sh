@@ -183,7 +183,7 @@ function throw() {
 
 # ([int error, String message, String... args]) -> error
 function quit() {
-    # TODO: Does this have any purpose?
+    # To silently quit an already thrown error
     [[ -n "$@" ]] && error "$@";
     
     exit "$ERROR_ID";
@@ -207,6 +207,9 @@ function assert() {
     [[ "$?" != '0' ]] && terminate "$@";
 }
 
+function ERRED() {
+    (( ERROR_ID != 0 )) && return 0 || return 1;
+}
 
 # (int id, String msg, String... args) -> ERROR_ID, ERROR_MSG
 function ERROR::set_error() {

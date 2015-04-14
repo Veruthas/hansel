@@ -6,43 +6,52 @@ alias global='declare -g';
 
 
 # VARIABLES
+global -r SCRIPT_FILE="$(realpath $0)";
+
 global -r SCRIPT_PATH="$(dirname $(realpath $0))"
 
 global -a SCRIPT_ARGUMENTS=("$@");
 
 
 # IMPORTS
-
 source "$SCRIPT_PATH/lib/errors.sh";
 
 
 source "$SCRIPT_PATH/lib/util.sh"
+
+source "$SCRIPT_PATH/lib/file.sh"
 
 source "$SCRIPT_PATH/lib/nodes.sh"
 
 
 source "$SCRIPT_PATH/options.sh";
 
+source "$SCRIPT_PATH/settings.sh";
 
-# MISC SETUP
-DEBUG::off;
+# TODO: help
+#source "$SCRIPT_PATH/help.sh";
 
-if DEBUGGING; then
-
-DEBUG::set_simple_header
-ERROR::set_simple_header
-
-function VARS::var_file() {
-    echo "$SCRIPT_PATH/../vars";
-}
-
-fi
-
-ERROR::set_simple_header
 
 # MAIN
 function HANSEL::main() {
+    
+    [[ ! -d "$(SETTINGS::settings_path)" ]] && mkdir "$(SETTINGS::settings_path)";
+    
     OPTIONS::process_line "$@";
 }
 
-HANSEL::main "$@";
+
+# MISC SETUP
+DEBUG::on;
+
+if DEBUGGING; then
+
+    DEBUG::set_simple_header;
+    ERROR::set_simple_header;
+    
+    HANSEL::main "$@";
+
+else
+
+    HANSEL::main "$@";
+fi

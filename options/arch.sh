@@ -45,7 +45,7 @@ function ARCH::option_category() {
 
 
 # virtual () => String log_file
-function ARCH::log_file() {
+function ARCH::package_log_file() {
     echo "$HOME/.hansel/log_file"
 }
 
@@ -82,6 +82,7 @@ function ARCH::install() {
     
     
     sudo pacman -S $package $confirm 2>/dev/null;
+    
     local err_no="$?";
     
     
@@ -90,9 +91,10 @@ function ARCH::install() {
         
     if (( err_no != 0 )); then
         
-        error "$err_no" "'$package' not found.";
+        throw "$err_no" "'$package' not found.";        
         
-        return "$err_no";
+        return "$?";
+        
     else
         ARCH::simple_log "install" "$package";
     fi
@@ -138,11 +140,12 @@ function ARCH::aur() {
         aur_url+="/${package:0:2}/$package/$package.tar.gz";
         
         
-        wget "$aur_url";
+        wget "$aur_url"; err_no="$?"; 
         
-        err_no="$?";
-        
-        (( $? != 0 )) && error "$err_no" "Could not find package '$package'." && return $err_no;
+        if (( err_no != 0 )); then 
+            throw "$err_no" "Could not find package '$package'."; 
+            return $?; 
+        fi
         
         tar -zxf "$package.tar.gz";                
         
@@ -152,13 +155,15 @@ function ARCH::aur() {
     local file=$(ls "$package_path"/*.pkg.tar.xz 2>/dev/null);
     
     # if the package has not been built yet
-    if (( $? != 0 )); then
-        
+    if [[ -z "$file" ]]; then
         cd "$build_path/$package";
+                
+        makepkg --asroot "$confirm"; err_no="$?"; 
         
-        makepkg --asroot "$confirm"
-        
-        (( $? != 0 )) && error "$err_no" "Could not build package '$package'." && return $err_no;
+         if (( err_no != 0 )); then 
+            throw "$err_no" "Could not build package '$package'."; 
+            return $?; 
+        fi
         
         file=$(ls *.pkg.tar.xz);                
     
@@ -172,8 +177,13 @@ function ARCH::aur() {
     fi
         
              
-    pacman -U "$package_path/$file" "$confirm"
-        
+    pacman -U "$file" "$confirm"; err_no="$?";
+    
+     if (( err_no != 0 )); then 
+        throw "$err_no" "Could not install package '$package'."; 
+        return $?; 
+    fi
+    
     cd "$current_path";
     
     
@@ -184,7 +194,7 @@ function ARCH::aur() {
 function ARCH::simple_log() {
     local type="$1";
     local package="$2";    
-    local log_file="$(ARCH::log_file)";
+    local log_file="$(ARCH::package_log_file)";
     
     echo -e "$type\t$package" >> "$log_file";
 }

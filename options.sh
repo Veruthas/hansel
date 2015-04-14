@@ -27,8 +27,8 @@ function OPTIONS::add() {
 function OPTIONS::process_line() {
     
     OPTIONS::preprocess "$@";
-    
-    # process options
+        
+    # process options    
     OPTIONS::process "$@";
     
     OPTIONS::postprocess "$@";
@@ -41,16 +41,25 @@ function OPTIONS::process() {
 
     local option="$1";
     shift;
-        
+    
     if [[ -n "$option" ]] && [[ -n "${OPTIONS[$option]}" ]]; then
-        "${OPTIONS[$option]}" "$@";
+        "${OPTIONS[$option]}" "$@";        
+        OPTIONS::verify_no_errors;
+        
     elif [[ -z "$option" ]]; then
         OPTIONS::on_missing;
+        
     else
         OPTIONS::on_invalid "$option" "$@";
+        
     fi
 }
 
+
+# () !!
+function OPTIONS::verify_no_errors() {
+    ERRED && terminate;
+}
 
 # (...) !! 1
 function OPTIONS::verify_no_args() {
