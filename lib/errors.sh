@@ -159,14 +159,14 @@ global ERROR_HEADER=;
 global ERROR_SILENT=;
 global ERROR_FILE=;
 
-global ERROR_ID=;
-global ERROR_MESSAGE=;
+global ERROR_ID=0;
+global ERROR_MESSAGE="";
 
 
 # (int error, String message, String... args)
 function error() {
     [[ -n "$@" ]] && ERROR::set_error "$@";
-    echo "'$@'" >&2
+    
     return "$ERROR_ID";
 }
 
@@ -207,7 +207,7 @@ function assert() {
     [[ "$?" != '0' ]] && terminate "$@";
 }
 
-function ERRED() {
+function ERRED() {    
     (( ERROR_ID != 0 )) && return 0 || return 1;
 }
 
@@ -218,7 +218,7 @@ function ERROR::set_error() {
     shift 2;
     
     ERROR_ID="${id:-0}";
-    ERROR_MESSAGE=$(printf "$message" "$@");
+    ERROR_MESSAGE=$(printf "$message" "$@");    
 }
 
 # ()

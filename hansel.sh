@@ -47,10 +47,8 @@ DEBUG::on;
 if DEBUGGING; then
 
     DEBUG::set_simple_header;
-    ERROR::set_simple_header;
-    
-    HANSEL::main "$@";
-
+    ERROR::set_simple_header;    
+    HANSEL::main "$@";     
 else
 
     HANSEL::main "$@";
