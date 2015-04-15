@@ -1,52 +1,15 @@
 #!/bin/bash
 
-## Simple arch package installation options
-
-DEBUG::on "ARCH";
-
-
-# (String package, [--confirm]);
-OPTIONS::add 'install' 'ARCH::option_install';
-function ARCH::option_install() {
-
-    local package="$1";
-    
-    local confirm="$2";
-    
-    if [[ -n "$confirm" ]] && [[ "$confirm" != "--confirm" ]]; then
-        error 1 "Invalid option '$@'";
-    fi
-    
-    ARCH::install "$package" "$confirm"
-}
-
-# (String package, [--confirm]);
-OPTIONS::add 'aur' 'ARCH::option_aur';
-function ARCH::option_aur() 
-{
-    local package="$1";
-    
-    local confirm="$2";
-    
-    if [[ -n "$confirm" ]] && [[ "$confirm" != "--confirm" ]]; then
-        error 1 "Invalid option '$@'";
-    fi
-    
-    ARCH::aur "$package" "$confirm"
-}
-
-# (String name)
-OPTIONS::add 'category' 'ARCH::option_category';
-function ARCH::option_category() {
-    local name="$1";
-    
-    simple_log "category" "$name";
-}
-
+DEBUG::off ARCH;
 
 # virtual () => String log_file
 function ARCH::package_log_file() {
-    echo "$HOME/.hansel/log_file"
+    echo "$HOME/.hansel/package.log"
+}
+
+# virtual () => String aur_path
+function ARCH::date_file() {
+    echo "$HOME/.hansel/date.dat"
 }
 
 # virtual () => String package_path
@@ -62,6 +25,7 @@ function ARCH::aur_path() {
 
 
 global ARCH_REAL_PACKAGE_PATH="/var/cache/pacman/pkg";
+
 
 # (String package, bool confirm)
 function ARCH::install() {    
@@ -135,7 +99,7 @@ function ARCH::aur() {
         cd "$build_path";
         
         
-        aur_url="$ARCH_ARM_AUR_PACKAGE_URL/$(cat /etc/pacman.d/server_date)";
+        aur_url="$ARCH_ARM_AUR_PACKAGE_URL/$(ARCH::date_file)";
         
         aur_url+="/${package:0:2}/$package/$package.tar.gz";
         
@@ -189,6 +153,13 @@ function ARCH::aur() {
     
     
     ARCH::simple_log "arch" "$package";    
+}
+
+# (String category) -> simple_log
+function ARCH::category() {
+    local name="$1";
+    
+    simple_log "category" "$name";
 }
 
 function ARCH::simple_log() {

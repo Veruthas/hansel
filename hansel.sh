@@ -14,19 +14,21 @@ global -a SCRIPT_ARGUMENTS=("$@");
 
 
 # IMPORTS
-source "$SCRIPT_PATH/lib/errors.sh";
+
+# errors is a base file, want to load this before anything else
+source "$SCRIPT_PATH/errors.sh";
 
 
-source "$SCRIPT_PATH/lib/util.sh"
-
-source "$SCRIPT_PATH/lib/file.sh"
-
-source "$SCRIPT_PATH/lib/nodes.sh"
+for lib in "$SCRIPT_PATH/lib"/*; do
+    source "$lib";
+done
 
 
 source "$SCRIPT_PATH/options.sh";
 
+# needs to be loaded last
 source "$SCRIPT_PATH/settings.sh";
+
 
 # TODO: help
 #source "$SCRIPT_PATH/help.sh";
@@ -48,7 +50,7 @@ if DEBUGGING; then
 
     DEBUG::set_simple_header;
     ERROR::set_simple_header;    
-    HANSEL::main "$@";     
+    HANSEL::main "$@"; 
 else
 
     HANSEL::main "$@";

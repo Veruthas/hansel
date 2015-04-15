@@ -2,12 +2,12 @@
 
 ## Implements options for generic functionality (do,if,ignore,pause)
 
-DEBUG::off BASIC;
+DEBUG::off BASIC_OPTIONS;
 
 # (String command) -> eval command
 OPTIONS::add 'do' 'BASIC::option_do';
 function BASIC::option_do() {
-    alert BASIC 'in BASIC::option_do'
+    alert BASIC_OPTIONS 'in BASIC::option_do'
     
     eval "$@";
 }
@@ -16,7 +16,7 @@ function BASIC::option_do() {
 # (String condition, ...) -> if condition ...
 OPTIONS::add 'if' 'BASIC::option_if';
 function BASIC::option_if() {
-    alert BASIC 'in BASIC::option_if';
+    alert BASIC_OPTIONS 'in BASIC::option_if';
     
     local condition="$1";
     shift;    
@@ -29,7 +29,7 @@ function BASIC::option_if() {
 # (String question, -y|-n, ...) -> if question ...
 OPTIONS::add 'ask' 'BASIC::option_ask';
 function BASIC::option_ask() {
-    alert BASIC 'in BASIC::option_ask';
+    alert BASIC_OPTIONS 'in BASIC::option_ask';
     
     local question="$1"; 
     
@@ -54,7 +54,7 @@ function BASIC::option_ask() {
 # (...) -> ...
 OPTIONS::add 'ignore' 'BASIC::option_ignore';
 function BASIC::option_ignore() {    
-    alert BASIC 'in BASIC::option_ignore';
+    alert BASIC_OPTIONS 'in BASIC::option_ignore';
     
     OPTIONS::process "$@";
 }
@@ -63,7 +63,7 @@ function BASIC::option_ignore() {
 # (String? prompt) -> prompt
 OPTIONS::add 'pause' 'BASIC::option_pause';
 function BASIC::option_pause() {
-    alert BASIC 'in BASIC::option_pause';
+    alert BASIC_OPTIONS 'in BASIC::option_pause';
     
     local prompt="${1:-Press any key to continue...}";
     
