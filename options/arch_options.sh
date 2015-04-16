@@ -21,20 +21,28 @@ function ARCH::option_install() {
     ARCH::install "$package" "$confirm"
 }
 
-# (String package, [--confirm]);
+# (String package, [--confirm], [--force]);
 OPTIONS::add 'aur' 'ARCH::option_aur';
 function ARCH::option_aur() {
     alert ARCH_OPTIONS "in ARCH::option_aur";
     
     local package="$1";
     
-    local confirm="$2";
+    local confirm;
+    local force;
     
-    if [[ -n "$confirm" ]] && [[ "$confirm" != "--confirm" ]]; then
-        error 1 "Invalid option '$@'";
+    if [[ "$2" == "--confirm" ]]; then
+        confirm=true;
+        shift;
     fi
     
-    ARCH::aur "$package" "$confirm"
+    if [[ "$2" == "--force" ]]; then
+        force=true;
+        shift;
+    fi
+    
+    
+    ARCH::install_aur "$package" "$confirm" "$force";
 }
 
 # (String name)

@@ -2,14 +2,14 @@
 
 ## Implement node utilitly functions
 
-[[ -z "$NODE" ]] && declare NODE=true || return;
+[[ -z "$NODES" ]] && declare NODES=true || return;
 
-DEBUG::off NODE
+DEBUG::off NODES
 
 
 # (String path) => int... ids;
-function NODE::get_all() {
-    alert NODE "in NODE::get_all";
+function NODES::get_all() {
+    alert NODES "in NODES::get_all";
 
     local path="${1:-.}";
     
@@ -42,30 +42,30 @@ function NODE::get_all() {
 }
 
 # (String path) => int id
-function NODE::get_last() {
-    alert NODE "in NODE::get_last";
+function NODES::get_last() {
+    alert NODES "in NODES::get_last";
     local path="${1:-.}";
     
-    local -a nodes=( $(NODE::get_all "$path") );
+    local -a nodes=( $(NODES::get_all "$path") );
     
     (( ${#nodes[@]} > 0 )) && echo ${nodes[-1]};
 }
 
 # (String path) => int id
-function NODE::get_next() {
-    alert NODE "in NODE::get_next";
+function NODES::get_next() {
+    alert NODES "in NODES::get_next";
     
     local path="${1:-.}";
     
-    local last=$(NODE::get_last "$path");
+    local last=$(NODES::get_last "$path");
     
     [[ -n $last ]] && echo $(( last + 1 )) || echo 0;
     
 }
 
 # (String path, int id) => String node_path
-function NODE::get_path() {
-    alert NODE "in NODE::get_path";
+function NODES::get_path() {
+    alert NODES "in NODES::get_path";
     
     local path="${1:-.}";
     local id="$2";
@@ -78,16 +78,16 @@ function NODE::get_path() {
 
 
 # (String path) => int id -> create path/id
-function NODE::create_dir() {
-    alert NODE "in NODE::create_dir";
+function NODES::create_dir() {
+    alert NODES "in NODES::create_dir";
     
     local path="${1:-.}";
     local verbal="$2";
     
-    local next=$(NODE::get_next "$path");
+    local next=$(NODES::get_next "$path");
         
-    local node_path=$(NODE::get_path "$path" "$next");
-    alert NODE "$node_path";
+    local node_path=$(NODES::get_path "$path" "$next");
+    alert NODES "$node_path";
     
     ERROR::clear;    
     local err_msg=$(mkdir -p "$node_path" 2>&1);
@@ -104,20 +104,20 @@ function NODE::create_dir() {
 
 
 # (String path, int parent_id) => int child_id
-function NODE::create() {
-    alert NODE "in NODE::create";
+function NODES::create() {
+    alert NODES "in NODES::create";
     
     local path="${1:-.}";
     
     local parent_id="$2";
     
-    local child_id=$(NODE::create_dir "$path");
+    local child_id=$(NODES::create_dir "$path");
     
     if [[ -n $parent_id ]]; then
     
-        NODE::set_parent "$path" "$child_id" "$id";
+        NODES::set_parent "$path" "$child_id" "$id";
     
-        NODE::add_child "$path" "$id" "$child_id";
+        NODES::add_child "$path" "$id" "$child_id";
     fi
     
     echo $child_id;
@@ -125,26 +125,26 @@ function NODE::create() {
 
 
 # (String path, int child_id, int parent_id) -> sets parent
-function NODE::set_parent() {
-    alert NODE "in NODE::set_parent";
+function NODES::set_parent() {
+    alert NODES "in NODES::set_parent";
     
     local path="${1:-.}";
     local child_id="$2";
     local parent_id="$3";
     
-    local node_path=$(NODE::get_path "$path" "$child_id");
+    local node_path=$(NODES::get_path "$path" "$child_id");
     
     echo "$parent_id" > "$node_path/.parent";
 }
 
 # (String path, int id) => parent_id
-function NODE::get_parent() {
-    alert NODE "in NODE::get_parent";
+function NODES::get_parent() {
+    alert NODES "in NODES::get_parent";
     
     local path="${1:-.}";    
     local id="$2";
     
-    local node_path=$(NODE::get_path "$path" "$id");
+    local node_path=$(NODES::get_path "$path" "$id");
     
     
     if [[ -e "$node_path/.parent" ]]; then
@@ -153,25 +153,25 @@ function NODE::get_parent() {
 }
 
 # (String path, int parent_id, int child_id) -> adds child to parent's list
-function NODE::add_child() {
-    alert NODE "in NODE::add_child";
+function NODES::add_child() {
+    alert NODES "in NODES::add_child";
     
     local path="${1:-.}";
     local parent_id="$2";
     local child_id="$3";
     
-    local node_path=$(NODE::get_path "$path" "$id");
+    local node_path=$(NODES::get_path "$path" "$id");
     
     echo "$child_id" >> "$node_path/.children"
 }
 # (String path, int id) => int... id
-function NODE::get_children() {   
-    alert NODE "in NODE::get_children";
+function NODES::get_children() {   
+    alert NODES "in NODES::get_children";
     
     local path="${1:-.}";
     local id="$2";
     
-    local node_path=$(NODE::get_path "$path" "$id");
+    local node_path=$(NODES::get_path "$path" "$id");
     
     if [[ -e "$node_path/.children" ]]; then
         
@@ -186,17 +186,17 @@ function NODE::get_children() {
 
 
 # (String path, int id) => int... id
-function NODE::trace_root() {
-    alert NODE "in NODE::trace_root";
+function NODES::trace_root() {
+    alert NODES "in NODES::trace_root";
     
     local path="${1:-.}";
     local id="$2";
     
-    local parent_id=$(NODE::get_parent "$path" "$id");
+    local parent_id=$(NODES::get_parent "$path" "$id");
     
     if [[ -n "$parent_id" ]]; then
         echo $parent_id;
-        NODE::trace_root "$path" "$parent_id";
+        NODES::trace_root "$path" "$parent_id";
     fi
 }
 

@@ -7,7 +7,8 @@ global TRACE_FILE_NAME="trace.dat";
 
 # virtual () => String trace_directory
 function TRACE::trace_directory() {
-    echo "$HOME/.hansel";
+    local dir="/tmp/hansel-settings";
+    echo "$dir"; mkdir -p "$dir";
 }
 # virtual () => String trace_file
 function TRACE::trace_file() {

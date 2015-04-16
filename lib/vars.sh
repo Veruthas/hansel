@@ -10,18 +10,19 @@ global VARS_FILE_NAME="vars.dat";
 
 # virtual () => var_directory
 function VARS::var_directory() {
-    echo "$HOME/.hansel";
+    local dir="/tmp/hansel-settings";
+    echo "$dir"; mkdir -p "$dir";
 }
 # virtual () => var_file
-function VARS::var_file() {    
-    echo "$(VARS::var_directory)/VARS_FILE_NAME";
+function VARS::var_file() {
+    echo "$(VARS::var_directory)/$VARS_FILE_NAME";
 }
 
 
 
 # () -> VARS < var_file
 function VARS::load_vars() {
-    alert VARS 'in load_vars';
+    alert VARS 'in VARS::load_vars';
     
     if [[ -z "$VARS_LOADED" ]]; then
         
@@ -54,7 +55,7 @@ function VARS::load_vars() {
 
 # () -> >var_file
 function VARS::save_vars() {
-    alert VARS 'in save_vars';
+    alert VARS 'in VARS::save_vars';
     
     local var_file="$(VARS::var_file)";    
     > "$var_file";
@@ -74,23 +75,23 @@ function VARS::save_vars() {
 
 # (String... names) ->  >&1
 function VARS::list_vars() {
-    alert VARS 'in list_vars';
+    alert VARS 'in VARS::list_vars';
     
     if (( ${#VARS[@]} == 0 )); then
-        VARS::show_empty;
+        VARS::format_empty;
     else
-        VARS::show_header;
+        VARS::format_header;
         
         local name=;
         
         if [[ -n "$1" ]]; then
             while [[ -n "$1" ]]; do
                 name="$1"; shift;
-                VARS::list_var "$name";
+                VARS::display_var "$name";
             done
         else
             for name in "${!VARS[@]}"; do
-                VARS::list_var "$name";
+                VARS::display_var "$name";
             done
         fi
     fi
@@ -98,11 +99,14 @@ function VARS::list_vars() {
 }
 
 # (String name) -> show_var name [name] >&1
-function VARS::list_var() {
-    alert VARS 'in list_var';
+function VARS::display_var() {
+    alert VARS 'in VARS::display_var';
+    
     local name="$1";
+    
     local value="${VARS[$1]}";
-    VARS::show_var "$name" "$value";
+    
+    VARS::format_var "$name" "$value";
 }
 
 
@@ -119,22 +123,22 @@ function VAR(){
 
 
 # virtual | () -> >&1
-function VARS::show_empty() {
-    alert VARS 'in VARS::show_empty';
+function VARS::format_empty() {
+    alert VARS 'in VARS::format_empty';
     
     echo "<no definitions>";
 }
 
 # virtual | () -> >&1
-function VARS::show_header() {
-    alert VARS 'in VARS::show_header';
+function VARS::format_header() {
+    alert VARS 'in VARS::format_header';
     
     echo "<variables>";
 }
 
 # virtual | (String name, String value) -> >&1
-function VARS::show_var() {
-    alert VARS 'in VARS::show_var';
+function VARS::format_var() {
+    alert VARS 'in VARS::format_var';
     
     local name="$1";
     local value="${2:-<not defined>}";
