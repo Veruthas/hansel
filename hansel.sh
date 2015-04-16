@@ -19,12 +19,17 @@ global -a SCRIPT_ARGUMENTS=("$@");
 source "$SCRIPT_PATH/errors.sh";
 
 
+# libraries (no executable code)
 for lib in "$SCRIPT_PATH/lib"/*; do
     source "$lib";
 done
 
 
-source "$SCRIPT_PATH/options.sh";
+# options
+for options in "$SCRIPT_PATH/options"/*; do
+    source "$options";
+done
+
 
 # needs to be loaded last
 source "$SCRIPT_PATH/settings.sh";

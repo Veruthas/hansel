@@ -3,10 +3,17 @@
 ## Implements file tracing (pops off commands one at a time from the file)
 DEBUG::off TRACE_OPTIONS
 
+global TRACE_FILE_NAME="trace.dat";
+
+# virtual () => String trace_directory
+function TRACE::trace_directory() {
+    echo "$HOME/.hansel";
+}
 # virtual () => String trace_file
 function TRACE::trace_file() {
-    echo $HOME/.hansel/trace.dat;
+    echo "$(TRACE::trace_directory)/$TRACE_FILE_NAME";
 }
+
 
 # (String file);
 function TRACE::set_trace_file() {

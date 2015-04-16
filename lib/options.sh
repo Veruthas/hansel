@@ -121,24 +121,3 @@ function OPTIONS::on_invalid() {
 
     terminate 2 "invalid option: $option";
 }
-
-
-# () -> loads option files
-function OPTIONS::load() {    
-    local option_glob="$SCRIPT_PATH/options/*";
-    local option_file=;
-    
-    for option_file in $option_glob; do
-        [[ "$option_file" == "$option_glob" ]] && break;
-        alert OPTIONS "loading <$(basename $option_file)> @ <$(dirname $option_file)>";
-        source "$option_file";
-        alert OPTIONS ' ';                
-    done
-    
-    
-    # HACK: Only way it will process this as one argument
-    local added="added: (${!OPTIONS[@]})";
-    alert OPTIONS "$added"
-}
-
-OPTIONS::load;

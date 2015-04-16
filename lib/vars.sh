@@ -1,8 +1,21 @@
 #!/bin/bash
 
-## Implements variables functions (set,unset,vars,on)
+## SUMMARY: Implements variables functions (set,unset,vars,on)
+## DEPENDS: lib/util.sh
 
 DEBUG::off VARS;
+
+
+global VARS_FILE_NAME="vars.dat";
+
+# virtual () => var_directory
+function VARS::var_directory() {
+    echo "$HOME/.hansel";
+}
+# virtual () => var_file
+function VARS::var_file() {    
+    echo "$(VARS::var_directory)/VARS_FILE_NAME";
+}
 
 
 
@@ -129,9 +142,3 @@ function VARS::show_var() {
     echo " [$name] = '$value'";
 }
 
-
-# virtual | () => var_file
-function VARS::var_file() {
-    alert VARS 'in VARS::var_file';
-    echo "$HOME/.hansel/vars.dat";
-}
