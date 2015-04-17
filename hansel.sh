@@ -42,8 +42,6 @@ source "$SCRIPT_PATH/settings.sh";
 # MAIN
 function HANSEL::main() {
     
-    [[ ! -d "$(SETTINGS::settings_path)" ]] && mkdir "$(SETTINGS::settings_path)";
-    
     OPTIONS::process_line "$@";
 }
 
@@ -55,7 +53,11 @@ if DEBUGGING; then
 
     DEBUG::set_simple_header;
     ERROR::set_simple_header;    
+    
     HANSEL::main "$@"; 
+    
+    
+    
 else
 
     HANSEL::main "$@";

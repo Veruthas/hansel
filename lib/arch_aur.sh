@@ -12,6 +12,8 @@ function ARCH::aur_path() {
     echo "$(ARCH::aur_directory)/$ARCH_AUR_PATH_NAME";
 }
 
+# TODO: extract aur_url_making completely (no date string)
+# Each function should only operate on input
 
 global ARCH_AUR_PACKAGE_URL="https://aur.archlinux.org/packages";
 global ARCH_ARM_AUR_PACKAGE_URL="http://seblu.net/a/archive/aur";

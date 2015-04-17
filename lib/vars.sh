@@ -6,121 +6,141 @@
 DEBUG::off VARS;
 
 
-global VARS_FILE_NAME="vars.dat";
-
-# virtual () => var_directory
-function VARS::var_directory() {
-    local dir="/tmp/hansel-settings";
-    echo "$dir"; mkdir -p "$dir";
-}
-# virtual () => var_file
-function VARS::var_file() {
-    echo "$(VARS::var_directory)/$VARS_FILE_NAME";
-}
-
-
-
-# () -> VARS < var_file
+# (String filename) => AA vars < filename
 function VARS::load_vars() {
     alert VARS 'in VARS::load_vars';
     
-    if [[ -z "$VARS_LOADED" ]]; then
+    local filename="$1";
+    
+    [[ ! -e "$filename" ]] && echo '()' && return;
+    
+    local -A vars=();    
+    local name=;    
+    
+    while read -r line; do
         
-        local var_file="$(VARS::var_file)";        
-        [[ ! -e "$var_file" ]] && > "$var_file";
-        
-        local name=;
-        
-        while read -r line; do
-            
-            # if a blank line is in the file
-            if [[ -z "$line" ]]; then
+        # if a blank line is in the file
+        if [[ -z "$line" ]]; then
+            unset name;
+        else
+            if [[ -z "$name" ]]; then
+                name="$(UTIL::expand_text $line)";
+            else            
+                alert VARS "vars[$name]=$line";
+                vars["$name"]="$(UTIL::expand_text $line)"
                 unset name;
-            else
-                if [[ -z "$name" ]]; then
-                    name="$(UTIL::expand_text $line)";
-                else            
-                    alert VARS "VARS[$name]=$line";
-                    VARS["$name"]="$(UTIL::expand_text $line)";
-                    unset name;
-                fi
             fi
-        
-        done < "$var_file";
-        
-        
-        VARS_LOADED=true;
-    fi
+        fi
+    
+    done < "$filename";
+    
+    local result="$(declare -p vars)"
+    
+    echo "${result#*=}";
 }
 
-# () -> >var_file
+# (String filename, AA vars) > filename
+
 function VARS::save_vars() {
     alert VARS 'in VARS::save_vars';
     
-    local var_file="$(VARS::var_file)";    
-    > "$var_file";
+    local filename="$1";
+    eval "local -A vars=$2";
+    
+    > "$filename";
     
     local name=;
     local value=;
     
-    for name in "${!VARS[@]}"; do
-        alert VARS "subscript $name";
-        value="${VARS[$name]}";
-        echo $(UTIL::flatten_text "$name")  >> "$var_file";
-        echo $(UTIL::flatten_text "$value") >> "$var_file";
-    done
-        
-    VARS_LOADED=true;
+    for name in "${!vars[@]}"; do
+        alert vars "subscript $name";
+        value="${vars[$name]}";
+        echo $(UTIL::flatten_text "$name")  >> "$filename";
+        echo $(UTIL::flatten_text "$value") >> "$filename";
+    done        
 }
 
-# (String... names) ->  >&1
+
+# (AA vars, String value, String... name) => AA vars
+function VARS::set_vars() {
+    alert VARS "in VARS::set_var";
+    
+    eval "local -A vars=$1";
+    
+    local value="$2";
+    
+    shift 2;
+    
+    while (( $# > 0 )); do
+        alert VARS "[$1] = {$value}";
+        vars["$1"]="$value";
+        shift;
+    done
+    
+    local result="$(declare -p vars)";
+    
+    echo "${result#*=}";
+}
+
+# (AA vars, String... name) => AA vars
+function VARS::unset_vars() {
+    alert VARS "in VARS::unset_var";
+    
+    eval "local -A vars=$1"; shift;
+        
+    while (( $# > 0 )); do        
+        unset vars["$1"];
+        shift;
+    done
+    
+    local result="$(declare -p vars)";
+    
+    echo "${result#*=}";
+}
+
+
+# (AA vars, String name) => var
+function VARS::get_var() {
+    alert VARS "in VARS::get_var";
+    
+    eval "local -A vars=$1";
+    
+    local name="$2";
+    
+    echo "${vars[$name]}";
+}
+
+
+# (AA vars, String... names) => formatted_vars
 function VARS::list_vars() {
     alert VARS 'in VARS::list_vars';
     
-    if (( ${#VARS[@]} == 0 )); then
+    eval "local -A vars=$1";
+    shift;    
+    
+    if (( ${#vars[@]} == 0 )); then
         VARS::format_empty;
     else
         VARS::format_header;
         
         local name=;
+        local value=;
         
-        if [[ -n "$1" ]]; then
+        if (( $# > 0 )); then
             while [[ -n "$1" ]]; do
                 name="$1"; shift;
-                VARS::display_var "$name";
+                value="${vars[$name]}";
+                VARS::format_var "$name" "$value";
             done
         else
-            for name in "${!VARS[@]}"; do
-                VARS::display_var "$name";
+            for name in "${!vars[@]}"; do                
+                value="${vars[$name]}";
+                VARS::format_var "$name" "$value";
             done
         fi
     fi
         
 }
-
-# (String name) -> show_var name [name] >&1
-function VARS::display_var() {
-    alert VARS 'in VARS::display_var';
-    
-    local name="$1";
-    
-    local value="${VARS[$1]}";
-    
-    VARS::format_var "$name" "$value";
-}
-
-
-# (String name)
-function VAR(){
-    alert VARS 'in VAR';
-    
-    VARS::load_vars;
-    
-    local name="$1";    
-    
-    echo "${VARS[$name]}";
-}
-
 
 # virtual | () -> >&1
 function VARS::format_empty() {

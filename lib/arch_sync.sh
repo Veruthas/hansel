@@ -30,7 +30,6 @@ function ARCH::server_date_file_name() {
 function ARCH::get_server_date() {
     cat "$(ARCH::server_date_path)";
 }
-
 # (String date)
 function ARCH::set_server_date() {
     local date="$1";
