@@ -5,42 +5,45 @@
 DEBUG::on "ARCH_OPTIONS";
 
 
-# (String package, [--confirm]);
+# ([--confirm], String package);
 OPTIONS::add 'install' 'ARCH::option_install';
 function ARCH::option_install() {
     alert ARCH_OPTIONS "in ARCH::option_install";
     
-    local package="$1";
+    local confirm=;
     
-    local confirm="$2";
-    
-    if [[ -n "$confirm" ]] && [[ "$confirm" != "--confirm" ]]; then
-        error 1 "Invalid option '$@'";
+    if [[ "$1" == --confirm ]]; then
+        confirm="true";
+        shift;
     fi
+    
+    local package="$1";    
+       
     
     ARCH::install "$package" "$confirm"
 }
 
-# (String package, [--confirm], [--force]);
+# ([--confirm]/[--force], String package);
 OPTIONS::add 'aur' 'ARCH::option_aur';
 function ARCH::option_aur() {
     alert ARCH_OPTIONS "in ARCH::option_aur";
-    
-    local package="$1";
-    
+        
     local confirm;
     local force;
     
-    if [[ "$2" == "--confirm" ]]; then
-        confirm=true;
-        shift;
-    fi
+    while true; do
+        if [[ "$1" == "--confirm" ]]; then
+            confirm=true;
+            shift;        
+        elif [[ "$1" == "--force" ]]; then
+            force=true;
+            shift;
+        else
+            break;
+        fi
+    done
     
-    if [[ "$2" == "--force" ]]; then
-        force=true;
-        shift;
-    fi
-    
+    local package="$1";
     
     ARCH::install_aur "$package" "$confirm" "$force";
 }
