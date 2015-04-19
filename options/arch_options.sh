@@ -33,25 +33,25 @@ function ARCH_OPTIONS::aur_cache_path() {
 }
 
 
-global ARCH_OPTIONS_LOG_NAME="simple.log"
+global ARCH_OPTIONS_LOG_NAME="arch.log"
 
-# virtual () => String simple_log_directory
-function ARCH_OPTIONS::simple_log_directory() {
+# virtual () => String log_directory
+function ARCH_OPTIONS::log_directory() {
     local dir="/tmp/hansel-settings";
     echo "$dir"; mkdir -p "$dir";
 }
-# virtual () => String simple_log_path
-function ARCH_OPTIONS::simple_log_path() {
-    local path="$(ARCH_OPTIONS::simple_log_directory)/$ARCH_OPTIONS_SIMPLE_LOG_NAME";
-    echo "$path"; mkdir -p "$path";
+# virtual () => String log_path
+function ARCH_OPTIONS::log_path() {
+    local path="$(ARCH_OPTIONS::log_directory)/$ARCH_OPTIONS_LOG_NAME";
+    echo "$path"; touch "$path";
 }
 
 
 
 # ([--confirm], String package);
-OPTIONS::add 'install' 'ARCH::option_install';
-function ARCH::option_install() {
-    alert ARCH_OPTIONS "in ARCH::option_install";
+OPTIONS::add 'install' 'ARCH_OPTIONS::option_install';
+function ARCH_OPTIONS::option_install() {
+    alert ARCH_OPTIONS 'in ARCH_OPTIONS::option_install';
     
     local confirm=;
     
@@ -73,13 +73,16 @@ function ARCH::option_install() {
     
     OPTIONS::verify_no_args "$@";
     
-    ARCH::install "$package_path" "$package" "$confirm"
+    ARCH::install "$package_path" "$package" "$confirm";
+    err_no="$?" && ((err_no != 0)) && return "$err_no";
+    
+    ARCH_OPTIONS::log "install" "$package";  
 }
 
 # ([--confirm]/[--force], String package);
-OPTIONS::add 'aur' 'ARCH::option_aur';
-function ARCH::option_aur() {
-    alert ARCH_OPTIONS "in ARCH::option_aur";
+OPTIONS::add 'aur' 'ARCH_OPTIONS::option_aur';
+function ARCH_OPTIONS::option_aur() {
+    alert ARCH_OPTIONS 'in ARCH_OPTIONS::option_aur';
         
     local confirm;
     local force;
@@ -119,18 +122,35 @@ function ARCH::option_aur() {
     local aur_path="$(ARCH_OPTIONS::aur_cache_path)";
     
     
+    local err_no;
+    
     ARCH::install_aur "$aur_url" "$aur_path" "$package" "$confirm" "$force";
+    err_no="$?" && ((err_no != 0)) && return "$err_no";
+    
+    
+    ARCH_OPTIONS::log "aur" "$package";
 }
 
 # (String name)
-OPTIONS::add 'category' 'ARCH::option_category';
-function ARCH::option_category() {
-    alert ARCH_OPTIONS "in ARCH::option_category";
+OPTIONS::add 'category' 'ARCH_OPTIONS::option_category';
+function ARCH_OPTIONS::option_category() {
+    alert ARCH_OPTIONS 'in ARCH_OPTIONS::option_category';
         
     local name="$1";
     
-    local simple_log_path="$(ARCH::simple_log_path)";
-    
-    ARCH::log_category "$simple_log_path" "$name";
+    ARCH_OPTIONS::log "category" "$name";
 }
 
+
+# (String name, String value)
+function ARCH_OPTIONS::log() {
+    alert ARCH_OPTIONS 'in ARCH_OPTIONS::log'
+    
+    local name="$1";
+    
+    local value="$2";
+    
+    local log_path="$(ARCH_OPTIONS::log_path)";
+    
+    ARCH::log "$log_path" "$name" "$value";
+}

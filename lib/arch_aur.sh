@@ -136,7 +136,7 @@ function ARCH::aur_cache_package() {
     package_node=$(NODES::get_path "$package_path" "$package_node");
     
     
-    cp -rv "$build_path"/* "$package_node";
+    mv -v "$build_path"/* "$package_node";
 }
 
 
@@ -159,7 +159,7 @@ function ARCH::aur_install_package() {
     err_no="$?";
     
     
-    if (( err_no != 0 )); then 
+    if ((err_no != 0)); then 
         throw "$err_no" "Could not install package '$package'."; 
         return $?; 
     fi    
@@ -213,6 +213,6 @@ function ARCH::install_aur() {
     
     
     # install package
-    ARCH::aur_install_package "$package_node" "$confirm";
-    err_no="$?" && ((err_no != 0)) && return "$err_no";
+    ARCH::aur_install_package "$package_node" "$confirm";    
+    err_no="$?" && ((err_no != 0)) && return "$err_no";      
 }
