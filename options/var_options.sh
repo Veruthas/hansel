@@ -5,7 +5,6 @@
 DEBUG::off VAR_OPTIONS;
 
 
-
 global VAR_OPTIONS_FILE_NAME='vars.dat';
 
 function VAR_OPTIONS::vars_file_directory() {
@@ -48,7 +47,7 @@ function VAR(){
 }
 
 
-
+## OPTIONS
 
 # ([--as <value> | --from <command>], String... name)
 OPTIONS::add 'set' 'VAR_OPTIONS::option_set';

@@ -3,16 +3,16 @@
 ## Implements file tracing (pops off commands one at a time from the file)
 DEBUG::off TRACE_OPTIONS
 
-global TRACE_FILE_NAME="trace.dat";
+global TRACE_OPTIONS_TRACE_FILE_NAME="trace.dat";
 
 # virtual () => String trace_directory
-function TRACE::trace_directory() {
+function TRACE::trace_file_directory() {
     local dir="/tmp/hansel-settings";
     echo "$dir"; mkdir -p "$dir";
 }
 # virtual () => String trace_file
-function TRACE::trace_file() {
-    echo "$(TRACE::trace_directory)/$TRACE_FILE_NAME";
+function TRACE::trace_file_path() {
+    echo "$(TRACE::trace_directory)/$TRACE_OPTIONS_TRACE_FILE_NAME";
 }
 
 
@@ -22,7 +22,7 @@ function TRACE::set_trace_file() {
     
     local file="$1";
     
-    cp "$file" "$(TRACE::trace_file)";
+    cp "$file" "$(TRACE::trace_file_path)";
 }
 
 
@@ -35,7 +35,7 @@ function TRACE::option_trace() {
         TRACE::set_trace_file "$1";
     fi
     
-    local trace_file=$(TRACE::trace_file);
+    local trace_file=$(TRACE::trace_file_path);
     
     while true; do
     

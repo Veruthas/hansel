@@ -1,32 +1,22 @@
 #!/bin/bash
 
-
-global ARCH_PACKAGE_LOG_FILE_NAME="package.log";
-
-# virtual () => String package_directory
-function ARCH::package_log_directory() {
-    local dir="/tmp/hansel-settings";
-    echo "$dir"; mkdir -p "$dir";
-}
-# virtual () => String log_file
-function ARCH::package_log_file() {
-    echo "$(ARCH::package_log_directory)/$ARCH_PACKAGE_LOG_FILE_NAME";
-}
-
-
-
-# (String category) -> simple_log
-function ARCH::category() {
-    local name="$1";
+# (String log_file, String category) -> simple_log
+function ARCH::log_category() {
+    alert ARCH 'in ARCH::log_category';
     
-    simple_log "category" "$name";
+    local log_file="$1";
+    local name="$2";
+    
+    simple_log "$log_file" "category" "$name";
 }
 
-# (String type, String value) -> simple_log
+# (String log_file, String type, String value) -> simple_log
 function ARCH::simple_log() {
-    local type="$1";
-    local value="$2";    
-    local log_file="$(ARCH::package_log_file)";
+    alert ARCH 'in ARCH::simple_log';
+    
+    local log_file="$1";
+    local type="$2";
+    local value="$3";    
     
     echo -e "$type\t$value" >> "$log_file";
 }

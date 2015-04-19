@@ -1,77 +1,112 @@
 #!/bin/bash
 
-global ARCH_AUR_PATH_NAME="Aur";
+## SUMMARY: Implements AUR package installation
+## DEPENDS: lib/nodes.sh
 
-# virtual () => String aur_directory
-function ARCH::aur_directory() {
-    local dir="/tmp/hansel-settings";
-    echo "$dir"; mkdir -p "$dir";
-}
-# virtual () => String aur_path
-function ARCH::aur_path() {
-    echo "$(ARCH::aur_directory)/$ARCH_AUR_PATH_NAME";
-}
+# break up AUR_INSTALL into install, download and build
+global ARCH_AUR_URL="https://aur.archlinux.org/packages";
 
-# TODO: extract aur_url_making completely (no date string)
-# Each function should only operate on input
+global ARCH_ARM_AUR_URL="http://seblu.net/a/archive/aur";
 
-global ARCH_AUR_PACKAGE_URL="https://aur.archlinux.org/packages";
-global ARCH_ARM_AUR_PACKAGE_URL="http://seblu.net/a/archive/aur";
 
-# virtual () => AUR_URL_BASE
-function ARCH::get_aur_url_base() {
-    echo "$ARCH_ARM_AUR_PACKAGE_URL/$(ARCH::get_server_date)";
+# (String date) => String arm_aur_url
+function ARCH::get_arm_aur_url() {
+    alert ARCH 'in ARCH::get_arm_aur_url'
+    
+    local date="$1";
+    
+    date=$(date -d "$date" +'%Y/%m/%d');
+    
+    echo "$ARCH_ARM_AUR_PACKAGE_URL/$date";
 }
 
-# (String package) => AUR_PACKAGE_URL
+
+# (String aur_url, String package) => package_url
 function ARCH::get_aur_package_url() {    
-    alert ARCH "in ARCH::get_aur_package_url";
+    alert ARCH 'in ARCH::get_aur_package_url';
     
-    local package="$1";
+    local aur_url="$1";
+    local package="$2";
     
-    echo "$(ARCH::get_aur_url_base)/${package:0:2}/$package/$package.tar.gz";    
+    echo "$aur_url/${package:0:2}/$package/$package.tar.gz";
 }
 
 
-# (String package, String build_path) => String tmp_path ;
-function ARCH::build_aur_package() {
-    alert ARCH "in ARCH::build_aur_package";
-    
-    local package="$1";
+# (String aur_url, String path, String package)
+function ARCH::aur_download_package() {
+    alert ARCH 'in ARCH::aur_download';
 
-    local build_path="$2";
+    # Will download node:    
+    #    ##/build/$PACKAGE.tar.gz
+    #    ##/build/$PACKAGE/*
+
+    local aur_url="$1";
     
-    local old_pwd="$PWD";
+    local path="$2";
     
-                        
-    # download package    
-    local build_path="$tmp_path/build"; 
-    mkdir -v "$build_path";    
-    cd "$build_path";
+    local package="$3";
+
+    local package_url="$(ARCH::get_aur_package_url $aur_url $package)";            
+               
+               
+    local err_no;
     
-    local aur_url=$(ARCH::get_aur_package_url "$package");
     
-    wget "$aur_url" ; err_no="$?";
+    # set up build directory
+    local build_path="$path/build";
+    mkdir -pv "$build_path";
+    
+    local old_pwd="$PWD";    
+    cd "$build_path";        
+    
+    # download pacakge
+    wget "$package_url" ; err_no="$?";
     
     if (( err_no != 0 )); then
         throw "$err_no" "Could not find package '$package'.";
         return $?;
     fi
     
+    # extract package
     tar -zxf "$package.tar.gz";
+        
+    
+    cd "$old_pwd";
+}
+
+# (String path, String package)
+function ARCH::aur_build_package() {
+    alert ARCH 'in ARCH:aur_build';
+    
+    # Will build node and move build package to main directory
+    #    ##/build/$PACKAGE.tar.gz
+    #    ##/build/$PACKAGE/*        
+    #    ##/*.pkg.tar.xz
     
     
-    # build package    
-    cd "$package";
+    local path="$1";
+
+    local package="$2";    
+        
+    
+    local package_path="$path/build/$package";
+    
+    local old_pwd="$PWD";        
+    
+    cd "$package_path";
             
-    local asroot="$( (( EUID == 0 )) && echo --asroot )";
+            
+    local asroot="$( (( EUID == 0 )) && echo --asroot )";    
     
-    makepkg "$asroot" "$confirm"; err_no="$?"; 
+    makepkg "$asroot" "$confirm";     
+    
+    err_no="$?"; 
     
     if (( err_no != 0 )); then 
         throw "$err_no" "Could not build package '$package'."; 
         return $?; 
     fi
+    
     
     file=$(ls *.pkg.tar.xz);            
 
@@ -82,61 +117,102 @@ function ARCH::build_aur_package() {
     mv -v $file ../..;
                    
             
-    cd "$old_pwd";    
+    cd "$old_pwd";
 }
 
-# (String package, bool confirm, bool force)
-function ARCH::install_aur() {
-    alert DEBUG "In ARCH::install_aur";
+# (String build_path, String package_path)
+function ARCH::aur_cache_package() {
+    alert ARCH 'in ARCH::aur_cache_package';
     
-    local package="${1:-INVALID_PACKAGE}";
+    local build_path="$1";
+    
+    local package_path="$2";
+    
+    
+    mkdir -pv "$package_path"        
+    
+    local package_node=$(NODES::create_dir "$package_path");
+    
+    package_node=$(NODES::get_path "$package_path" "$package_node");
+    
+    
+    cp -rv "$build_path"/* "$package_node";
+}
+
+
+# (String path, bool confirm) 
+function ARCH::aur_install_package() {
+    alert ARCH 'in ARCH::aur_install_package';
+    
+    local path="$1";
     
     local confirm="$( [[ -z $2 ]] && echo --noconfirm)";
     
-    local force="$3";
+    local file=$(ls "$path"/*.pkg.tar.xz);
     
     
-    local aur_path="$(ARCH::aur_path)"; mkdir -pv "$aur_path";
+    local err_no;        
+        
     
+    sudo pacman -U "$file" $confirm; 
+    
+    err_no="$?";
+    
+    
+    if (( err_no != 0 )); then 
+        throw "$err_no" "Could not install package '$package'."; 
+        return $?; 
+    fi    
+}
+
+
+
+# (String aur_url, String aur_path, String package, bool confirm, bool force)
+function ARCH::install_aur() {
+    alert DEBUG 'In ARCH::install_aur';
+    
+    local aur_url="$1";
+    
+    local aur_path="$2";
+    
+    local package="$3";
+    
+    local confirm="$4";
+    
+    local force="$5";
+                
     
     local package_path="$aur_path/$package";
+    
+    
+    local err_no;   
     
         
     if [[ ! -e "$package_path" ]] || [[ -n "$force" ]]; then
         
         local tmp_path="$(mktemp -d)";
-        ARCH::build_aur_package "$package" "$tmp_path";
-                
+        
+        # download package
+        ARCH::aur_download_package "$aur_url" "$tmp_path" "$package";
+        err_no="$?" && ((err_no != 0)) && return "$err_no";
+        
+        # build package
+        ARCH::aur_build_package "$tmp_path" "$package"; 
+        err_no="$?" && ((err_no != 0)) && return "$err_no";
+        
         # copy files into aur node
-        mkdir -pv "$package_path"
-        
-        
-        local package_node=$(NODES::create_dir "$package_path");
-        
-        package_node=$(NODES::get_path "$package_path" "$package_node");
-        
-        
-        cp -rv "$tmp_path"/* "$package_node";
+        ARCH::aur_cache_package "$tmp_path" "$package_path";
+        err_no="$?" && ((err_no != 0)) && return "$err_no";
         
     fi        
         
-    # Get latest aur installation
+    # Get latest aur cached package
     local package_node=$(NODES::get_last "$package_path");
             
     local package_node=$(NODES::get_path "$package_path" "$package_node");
     
     
-    local err_no;        
-    
-    file=$(ls "$package_node"/*.pkg.tar.xz);
-        
-    sudo pacman -U "$file" "$confirm"; err_no="$?";
-    
-     if (( err_no != 0 )); then 
-        throw "$err_no" "Could not install package '$package'."; 
-        return $?; 
-    fi    
-        
-    
-    ARCH::simple_log "arch" "$package";    
+    # install package
+    ARCH::aur_install_package "$package_node" "$confirm";
+    err_no="$?" && ((err_no != 0)) && return "$err_no";
 }
