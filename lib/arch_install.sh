@@ -3,6 +3,8 @@
 
 global ARCH_REAL_PACKAGE_PATH="/var/cache/pacman/pkg";
 
+global ARCH_MIRRORLIST_PATH="/etc/pacman.d/mirrorlist";
+
 
 # (String package_path, String package, bool confirm)
 function ARCH::install() {    
