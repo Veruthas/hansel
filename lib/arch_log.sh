@@ -1,5 +1,7 @@
 #!/bin/bash
 
+## SUMMARY: Implements Arch Linux simple logging
+
 # (String log_file, String name, String value, int padding=20) -> log
 function ARCH::log() {
     alert ARCH 'in ARCH::log';

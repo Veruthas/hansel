@@ -2,7 +2,7 @@
 
 ## Simple arch package installation options
 
-DEBUG::on "ARCH_OPTIONS";
+DEBUG::off "ARCH_OPTIONS";
 
 global ARCH_OPTIONS_PACKAGE_CACHE_NAME="Packages"
 

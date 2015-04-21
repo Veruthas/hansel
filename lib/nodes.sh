@@ -2,8 +2,6 @@
 
 ## Implement node utilitly functions
 
-[[ -z "$NODES" ]] && declare NODES=true || return;
-
 DEBUG::off NODES
 
 

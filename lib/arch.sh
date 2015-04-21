@@ -1,6 +1,5 @@
 #!/bin/bash
 
-## SUMMARY: Implements Arch Linux package installation functions
-## DEPENDS: lib/nodes.sh
+## SUMMARY: Implements Arch Linux functionality
 
 DEBUG::off ARCH;

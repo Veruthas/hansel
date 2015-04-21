@@ -12,7 +12,7 @@ function TRACE::trace_file_directory() {
 }
 # virtual () => String trace_file
 function TRACE::trace_file_path() {
-    echo "$(TRACE::trace_directory)/$TRACE_OPTIONS_TRACE_FILE_NAME";
+    echo "$(TRACE::trace_file_directory)/$TRACE_OPTIONS_TRACE_FILE_NAME";
 }
 
 
@@ -37,25 +37,27 @@ function TRACE::option_trace() {
     
     local trace_file=$(TRACE::trace_file_path);
     
+    local line_no=0;
+    
     while true; do
     
         local line=$(FILE::peek_line "$trace_file");
         
-        local $err_no=0;
+        local err_no=0;
         
         if [[ -n "$line" ]] && [[ ${line:0:1} != "#" ]]; then
             # TODO: quoting is very wonky, Check for proper quoting?
             eval "$SCRIPT_FILE $line";
-            $err_no=$?;
-        elif ! FILE::is_empty "$trace_file"; then 
+            err_no=$?;
+        elif [[ ! -e "$trace_file" ]] || FILE::is_empty "$trace_file"; then 
             break;
         fi
         
-        if (( "$err_no" != 0 )); then                        
-            throw 1 "Error processing line '$line'; run trace again to continue...";
+        if (( err_no != 0 )); then                        
+            throw 1 "Error processing line #$line_no: '$line'; run trace again to continue...";
             return 1;
         fi
-        
-        UTIL::pop_line "$trace_file" "$line";
+        (( line_no++ ))
+        FILE::pop_line "$trace_file" "$line";
     done
 }

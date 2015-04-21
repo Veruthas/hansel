@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## File utility functions
+## SUMMARY: File utility functions
 
 DEBUG::off FILE;
 

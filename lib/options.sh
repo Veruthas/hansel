@@ -14,7 +14,8 @@ global -a OPTIONS_POSTPROCESS;
 
 # (String option_name, String option funciton)
 function OPTIONS::add() {
-
+    alert OPTIONS 'in OPTIONS::add';
+    
     local option="$1";
     local option_function="$2";
     
@@ -25,6 +26,7 @@ function OPTIONS::add() {
 
 # (String option, ...)
 function OPTIONS::process_line() {
+    alert OPTIONS 'in OPTIONS::process_line';
     
     OPTIONS::preprocess "$@";
         
@@ -38,7 +40,8 @@ function OPTIONS::process_line() {
 
 # (String option, ...)
 function OPTIONS::process() {
-
+    alert OPTIONS 'in OPTIONS::process';
+    
     local option="$1";
     shift;
     
@@ -58,11 +61,14 @@ function OPTIONS::process() {
 
 # () !!
 function OPTIONS::verify_no_errors() {
+    alert OPTIONS 'in OPTIONS::verify_no_errors';
+    
     ERRED && terminate;
 }
 
 # (...) !! 1
 function OPTIONS::verify_no_args() {
+    alert OPTIONS 'in OPTIONS::verify_no_args';
     
     [[ -n "$@" ]] && terminate 1 "Extra arguments found '$@'"    
 
@@ -110,12 +116,15 @@ function OPTIONS::postprocess() {
 
 # virtual | () !! 1
 function OPTIONS::on_missing() {
+    alert OPTIONS 'in OPTIONS::on_missing';
+    
     terminate 1 "no option given";    
 }
 
 # virtual | (String option, ...) !! 2
 function OPTIONS::on_invalid() {
-
+    alert OPTIONS 'in OPTIONS::on_invalid';
+    
     local option="$1";
     shift;
 

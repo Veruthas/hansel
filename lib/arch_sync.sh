@@ -1,5 +1,6 @@
 #!/bin/bash
 
+## SUMMARY: Implements arch sync functionality
 
 global ARCH_REAL_SYNC_PATH='/var/lib/pacman/sync';
 

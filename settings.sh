@@ -2,7 +2,7 @@
 
 ## Wraps up the various virtual functions (giving different paths, etc)
 
-DEBUG::on SETTINGS;
+DEBUG::off SETTINGS;
 
 ERROR::set_simple_header
 

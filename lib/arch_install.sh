@@ -1,5 +1,7 @@
 #!/bin/bash
 
+## SUMMARY: Implements pacman package installation
+
 
 global ARCH_REAL_PACKAGE_PATH="/var/cache/pacman/pkg";
 
