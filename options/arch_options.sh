@@ -46,7 +46,46 @@ function ARCH_OPTIONS::log_path() {
     echo "$path"; touch "$path";
 }
 
+global ARCH_OPTIONS_SYNC_NAME="sync"
 
+# virtual () => String sync_directory
+function ARCH_OPTIONS::sync_directory() {
+    local dir="/tmp/hansel-settings";
+    echo "$dir"; mkdir -p "$dir";
+}
+# virtual () => String sync_path
+function ARCH_OPTIONS::sync_path() {
+    local path="$(ARCH_OPTIONS::sync_directory)/$ARCH_OPTIONS_SYNC_NAME";
+    echo "$path"; mkdir -p "$path";
+}
+
+
+global ARCH_OPTIONS_DATE_FILE_NAME="date.dat"
+
+# virtual () => String date_file_directory
+function ARCH_OPTIONS::date_file_directory() {
+    local dir="/tmp/hansel-settings";
+    echo "$dir"; mkdir -p "$dir";
+}
+# virtual () => String date_file_path
+function ARCH_OPTIONS::date_file_path() {
+    local path="$(ARCH_OPTIONS::date_file_directory)/$ARCH_OPTIONS_DATE_FILE_NAME";
+    echo "$path"; touch "$path";
+}
+
+
+global ARCH_OPTIONS_MIRROR_FILE_NAME="mirror.dat"
+
+# virtual () => String mirror_file_directory
+function ARCH_OPTIONS::mirror_file_directory() {
+    local dir="/tmp/hansel-settings";
+    echo "$dir"; mkdir -p "$dir";
+}
+# virtual () => String mirror_file_path
+function ARCH_OPTIONS::mirror_file_path() {
+    local path="$(ARCH_OPTIONS::mirror_file_directory)/$ARCH_OPTIONS_MIRROR_FILE_NAME";
+    echo "$path"; touch "$path";
+}
 
 # ([--confirm], String package);
 OPTIONS::add 'install' 'ARCH_OPTIONS::option_install';
@@ -141,6 +180,25 @@ function ARCH_OPTIONS::option_category() {
     ARCH_OPTIONS::log "category" "$name";
 }
 
+# (String date, String sync_path, String mirror_file, String date_file)
+
+# (String date)
+OPTIONS::add 'sync' 'ARCH_OPTIONS::option_sync';
+function ARCH_OPTIONS::option_sync() {
+    local date="${1:-$(date +'%Y/%m/%d')}";
+    
+    local sync_path="$(ARCH_OPTIONS::sync_path)";
+    
+    local mirror_file="$(ARCH_OPTIONS::mirror_file_path)";
+    
+    local date_file="$(ARCH_OPTIONS::date_file_path)";
+    
+    ARCH::sync "$date" "$sync_path" "$mirror_file" "$date_file";
+    err_no="$?" && ((err_no != 0)) && return "$err_no";
+    
+    ARCH_OPTIONS::log 'sync' "$date";
+}
+
 
 # (String name, String value)
 function ARCH_OPTIONS::log() {
@@ -154,3 +212,6 @@ function ARCH_OPTIONS::log() {
     
     ARCH::log "$log_path" "$name" "$value";
 }
+
+
+

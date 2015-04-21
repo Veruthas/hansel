@@ -121,3 +121,12 @@ function UTIL::selection_sort() {
     
     echo ${list[@]};
 }
+
+# (function url_path) -> 1/0
+function UTIL::url_path_exists() {
+    # Will not work with bad url's because verizon's page comes up every time :\
+    local url_path="$1";
+    wget --quiet --spider $url_path && return 0 || return 1;
+}
+
+# TODO: ADD UTIL BACKUP METHOD (add a .# suffix => a.txt -> a.txt.0 ...)

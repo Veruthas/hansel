@@ -1,50 +1,80 @@
 #!/bin/bash
 
 
-# (String date, String sync_path, String mirror_file, String date_file)
+global ARCH_REAL_SYNC_PATH='/var/lib/pacman/sync';
+
+# (String YYYY/MM/DD, String sync_path, String mirror_file, String date_file)
 function ARCH::sync() {
     alert ARCH 'in ARCH::sync';
-    
-    local date="$(ARCH::formate_date $1)";
+        
+    local date="$1";
+    if ! ARCH::verify_date_format "$date"; then
+        error; return $?
+    fi        
     
     local sync_path="$2";
     
-    local mirror_file"$3";
+    local mirror_file="$3";
     
     local date_file="$4";
         
+    # replace / with . for path
+    local new_sync_path="$sync_path/${date////.}";            
     
-    sudo echo "Server=$(ARCH::get_arm_server_url $date)" > "$mirror_file";
+    
+    # check if path exists
+    local sync_mirror=$(ARCH::get_arm_server_url "$date");
+    
+    if ! UTIL::url_path_exists "$sync_mirror"; then
+        throw 1 "Server '$sync_mirror' does not exist (date may not exist yet...).";
+        return $?;
+    fi
+    
+    sudo echo "Server=$sync_mirror/\$repo/os/\$arch" > "$mirror_file";
     
     sudo echo "$date" > "$date_file";
     
-    # check to see if sync already exists,
-    # other download a new sync
+    
+    # check if sync already cached    
+    if [[ -e "$new_sync_path" ]]; then        
+        echo "Cached sync found, copying...";
+        sudo rm -rv "$ARCH_REAL_SYNC_PATH";
+        sudo cp -rv "$new_sync_path" "$ARCH_REAL_SYNC_PATH";        
+    else
+        echo "No cached sync found, downloading...";
+        sudo pacman -Sy;        
+        cp -rv "$ARCH_REAL_SYNC_PATH" "$new_sync_path";
+    fi            
 }
-
-# TODO: ADD UTIL BACKUP METHOD (add a .# suffix => a.txt -> a.txt.0 ...)
-
 
 
 global ARCH_ARM_SERVER_URL="http://seblu.net/a/arm";
 
-# (String date) => YYYY/MM/DD
-function ARCH::format_date() {
-    date -d $1 +'%Y/%m/%d';
+
+# (String date) -> 0/1
+function ARCH::verify_date_format() {
+    local date="$1";
+    
+    if [[ "$date" =~ ^[0-9][0-9][0-9][0-9]/[0-9][0-9]/[0-9][0-9]$ ]]; then
+        return 0;
+    else
+        throw 1 "Bad date format '$date'";
+        return $?;
+    fi
 }
 
 # (String date) => arm_server_url
 function ARCH::get_arm_server_url() {
-
-    local date="$(ARCH::format_date $1)";
+    alert ARCH 'in ARCH::get_arm_server_url';
     
-    echo "$ARCH_ARM_SERVER_URL/$date/\$repo/os/\$arch";
+    local date="$1";
+    
+    echo "$ARCH_ARM_SERVER_URL/$date";
 
 }
 
 # (String package_path, bool confirm)
-function ARCH::update() {
-    
+function ARCH::update() {    
     alert ARCH 'in ARCH::update';
     
     local package_path="$package_path";
@@ -58,5 +88,3 @@ function ARCH::update() {
     
     sudo umount -v "$ARCH_REAL_PACKAGE_PATH";        
 }
-
-# Contacting you to ask if there are any updates
