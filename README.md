@@ -1,8 +1,8 @@
 # **hansel**
-*Bash script for logging and retracing an arch installation.*
-
-
-> __hansel__ {options}
+*Bash script for logging and retracing an arch installation.*  
+  
+####__hansel__ {options}  
+  
 ### **OPTIONS**
 ##### BASIC
 * __do__ <command>
