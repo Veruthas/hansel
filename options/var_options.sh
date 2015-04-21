@@ -11,6 +11,7 @@ function VAR_OPTIONS::vars_file_directory() {
     local dir="/tmp/hansel-settings";
     echo "$dir"; mkdir -p "$dir";
 }
+
 function VAR_OPTIONS::vars_file_path() {
     echo "$(VAR_OPTIONS::vars_file_directory)/$VAR_OPTIONS_FILE_NAME";
 }

@@ -46,16 +46,16 @@ function ARCH_OPTIONS::log_path() {
     echo "$path"; touch "$path";
 }
 
-global ARCH_OPTIONS_SYNC_NAME="sync"
+global ARCH_OPTIONS_SYNC_CACHE_NAME="sync"
 
-# virtual () => String sync_directory
-function ARCH_OPTIONS::sync_directory() {
+# virtual () => String sync_cache_directory
+function ARCH_OPTIONS::sync_cache_directory() {
     local dir="/tmp/hansel-settings";
     echo "$dir"; mkdir -p "$dir";
 }
-# virtual () => String sync_path
-function ARCH_OPTIONS::sync_path() {
-    local path="$(ARCH_OPTIONS::sync_directory)/$ARCH_OPTIONS_SYNC_NAME";
+# virtual () => String sync_cache_path
+function ARCH_OPTIONS::sync_cache_path() {
+    local path="$(ARCH_OPTIONS::sync_cache_directory)/$ARCH_OPTIONS_SYNC_CACHE_NAME";
     echo "$path"; mkdir -p "$path";
 }
 
@@ -86,6 +86,7 @@ function ARCH_OPTIONS::mirror_file_path() {
     local path="$(ARCH_OPTIONS::mirror_file_directory)/$ARCH_OPTIONS_MIRROR_FILE_NAME";
     echo "$path"; touch "$path";
 }
+
 
 # ([--confirm], String package);
 OPTIONS::add 'install' 'ARCH_OPTIONS::option_install';
@@ -118,21 +119,30 @@ function ARCH_OPTIONS::option_install() {
     ARCH_OPTIONS::log "install" "$package";  
 }
 
-# ([--confirm]/[--force], String package);
+# ([--confirm]/[--force]/[--version, int #], String package);
 OPTIONS::add 'aur' 'ARCH_OPTIONS::option_aur';
 function ARCH_OPTIONS::option_aur() {
     alert ARCH_OPTIONS 'in ARCH_OPTIONS::option_aur';
         
     local confirm;
-    local force;
+    local version="$ARCH_AUR_DEFAULT_VERSION";
     
     while true; do
         if [[ "$1" == "--confirm" ]]; then
             confirm=true;
             shift;        
         elif [[ "$1" == "--force" ]]; then
-            force=true;
+            version="$ARCH_AUR_FORCE_BUILD_VERSION";
             shift;
+        elif [[ "$1" == "--version" ]]; then
+            
+            if [[ ! "$2" =~ ^[0-9]+$ ]]; then
+                throw 1 "Expecting a version number, '$2' given.";
+                return "$?";
+            fi
+            
+            version="$2";
+            shift 2;
         else
             break;
         fi
@@ -148,8 +158,17 @@ function ARCH_OPTIONS::option_aur() {
             confirm=true;
             shift;        
         elif [[ "$1" == "--force" ]]; then
-            force=true;
+            version="$ARCH_AUR_FORCE_BUILD_VERSION";
             shift;
+        elif [[ "$1" == "--version" ]]; then
+            
+            if [[ ! "$2" =~ ^[0-9]+$ ]]; then
+                throw 1 "Expecting a version number, '$2' given.";
+                return "$?";
+            fi
+            
+            version="$2";
+            shift 2;
         else
             break;
         fi
@@ -163,11 +182,13 @@ function ARCH_OPTIONS::option_aur() {
     
     local err_no;
     
-    ARCH::install_aur "$aur_url" "$aur_path" "$package" "$confirm" "$force";
+    ARCH::install_aur "$aur_url" "$aur_path" "$package" "$confirm" "$version";
     err_no="$?" && ((err_no != 0)) && return "$err_no";
+
     
+    local package_node=$(ARCH::get_aur_package_node "$aur_path" "$package" "$version");
     
-    ARCH_OPTIONS::log "aur" "$package";
+    ARCH_OPTIONS::log "aur" "$package $package_node";
 }
 
 # (String name)
@@ -180,14 +201,12 @@ function ARCH_OPTIONS::option_category() {
     ARCH_OPTIONS::log "category" "$name";
 }
 
-# (String date, String sync_path, String mirror_file, String date_file)
-
 # (String date)
 OPTIONS::add 'sync' 'ARCH_OPTIONS::option_sync';
 function ARCH_OPTIONS::option_sync() {
     local date="${1:-$(date +'%Y/%m/%d')}";
     
-    local sync_path="$(ARCH_OPTIONS::sync_path)";
+    local sync_path="$(ARCH_OPTIONS::sync_cache_path)";
     
     local mirror_file="$(ARCH_OPTIONS::mirror_file_path)";
     

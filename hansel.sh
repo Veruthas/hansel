@@ -18,6 +18,8 @@ global -a SCRIPT_ARGUMENTS=("$@");
 # errors is a base file, want to load this before anything else
 source "$SCRIPT_PATH/errors.sh";
 
+[[ -e "$SCRIPT_PATH/DEBUGGING" ]] && DEBUG::on;
+
 
 # libraries (no executable code)
 for lib in "$SCRIPT_PATH/lib"/*; do
@@ -47,16 +49,13 @@ function HANSEL::main() {
 
 
 # MISC SETUP
-DEBUG::on;
 
 if DEBUGGING; then
 
     DEBUG::set_simple_header;
     ERROR::set_simple_header;    
     
-    HANSEL::main "$@"; 
-    
-    
+    HANSEL::main "$@";         
     
 else
 

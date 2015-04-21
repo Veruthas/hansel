@@ -157,17 +157,41 @@ function ARCH::aur_install_package() {
     sudo pacman -U "$file" $confirm; 
     
     err_no="$?";
-    
-    
-    if ((err_no != 0)); then 
+        
+    if ((err_no != 0)); then         
         throw "$err_no" "Could not install package '$package'."; 
         return $?; 
     fi    
+    
+    return 0;
 }
 
+global ARCH_AUR_DEFAULT_VERSION=-1;
+global ARCH_AUR_FORCE_BUILD_VERSION=-2;
 
+# HACK: Need to figure out a way to let pkgbuild, etc output to another file descriptor, and keep stdout clean
+# (String aur_path, String package, int version) => node
+function ARCH::get_aur_package_node() {
+    alert DEBUG 'In ARCH::get_aur_package_node';
+    
+    local aur_path="$1";
+    
+    local package="$2";
+    
+    local version="$3";
+    
+    local package_path="$aur_path/$package";
+    
+    if (( version >= 0 )); then      
+        package_node="$version";
+    else
+        package_node=$(NODES::get_last "$package_path");
+    fi
+    
+    echo "$package_node";
+}
 
-# (String aur_url, String aur_path, String package, bool confirm, bool force)
+# (String aur_url, String aur_path, String package, bool confirm, int version)
 function ARCH::install_aur() {
     alert DEBUG 'In ARCH::install_aur';
     
@@ -179,16 +203,16 @@ function ARCH::install_aur() {
     
     local confirm="$4";
     
-    local force="$5";
-                
-    
+    # version= { -2 -> force new version; -1 -> last version; 0+ -> use that version;  };
+    local version="$5";    
+        
     local package_path="$aur_path/$package";
     
     
     local err_no;   
     
         
-    if [[ ! -e "$package_path" ]] || [[ -n "$force" ]]; then
+    if [[ ! -e "$package_path" ]] || (( version == "$ARCH_AUR_FORCE_BUILD_VERSION" )); then
         
         local tmp_path="$(mktemp -d)";
         
@@ -203,16 +227,30 @@ function ARCH::install_aur() {
         # copy files into aur node
         ARCH::aur_cache_package "$tmp_path" "$package_path";
         err_no="$?" && ((err_no != 0)) && return "$err_no";
-        
+    
     fi        
         
     # Get latest aur cached package
-    local package_node=$(NODES::get_last "$package_path");
-            
-    local package_node=$(NODES::get_path "$package_path" "$package_node");
+    local package_node=;
     
+    if (( version >= 0 )); then      
+        package_node="$version";
+    else
+        package_node=$(NODES::get_last "$package_path");
+    fi
+        
+    echo "Using '$package' version '$package_node'...";
+    
+    local package_node=$(NODES::get_path "$package_path" "$package_node");
+    if [[ ! -e "$package_node" ]]; then
+        throw 1 "Aur package # '$package_node' does not exist.";
+        return "$?";
+    fi
     
     # install package
-    ARCH::aur_install_package "$package_node" "$confirm";    
-    err_no="$?" && ((err_no != 0)) && return "$err_no";      
+    ARCH::aur_install_package "$package_node" "$confirm";
+    
+    err_no="$?" && ((err_no != 0)) && return "$err_no";
+    
+    return 0
 }
