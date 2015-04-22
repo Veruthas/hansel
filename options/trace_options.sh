@@ -6,36 +6,35 @@ DEBUG::off TRACE_OPTIONS
 global TRACE_OPTIONS_TRACE_FILE_NAME="trace.dat";
 
 # virtual () => String trace_directory
-function TRACE::trace_file_directory() {
+function TRACE_OPTIONS::trace_file_directory() {
     local dir="/tmp/hansel-settings";
     echo "$dir"; mkdir -p "$dir";
 }
 # virtual () => String trace_file
-function TRACE::trace_file_path() {
-    echo "$(TRACE::trace_file_directory)/$TRACE_OPTIONS_TRACE_FILE_NAME";
+function TRACE_OPTIONS::trace_file_path() {
+    echo "$(TRACE_OPTIONS::trace_file_directory)/$TRACE_OPTIONS_TRACE_FILE_NAME";
 }
 
-
 # (String file);
-function TRACE::set_trace_file() {
-    alert TRACE_OPTIONS "in TRACE::set_trace_file.";
+function TRACE_OPTIONS::set_trace_file() {
+    alert TRACE_OPTIONS "in TRACE_OPTIONS::set_trace_file.";
     
     local file="$1";
     
-    cp "$file" "$(TRACE::trace_file_path)";
+    cp "$file" "$(TRACE_OPTIONS::trace_file_path)";    
 }
 
 
 # (String? file) -> traces file
-OPTIONS::add 'trace' TRACE::option_trace;
-function TRACE::option_trace() {
-    alert TRACE_OPTIONS "in TRACE::option_trace.";
+OPTIONS::add 'trace' 'TRACE_OPTIONS::option_trace';
+function TRACE_OPTIONS::option_trace() {
+    alert TRACE_OPTIONS "in TRACE_OPTIONS::option_trace.";
     
     if [[ -n "$1" ]]; then
-        TRACE::set_trace_file "$1";
+        TRACE_OPTIONS::set_trace_file "$1";
     fi
     
-    local trace_file=$(TRACE::trace_file_path);
+    local trace_file=$(TRACE_OPTIONS::trace_file_path);
     
     local line_no=0;
     
