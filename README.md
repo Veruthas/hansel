@@ -28,7 +28,7 @@ variables can be accessed using the __VAR__ function in do/if/set
 * __trace__ [file]
 
 ##### SETTINGS
-* __path__ [var | cache ] <path_name>
+* __path__ [var | cache] [path_name]
 
 ### **TODO**
 * Implement Logging (the second main point of hansel)

@@ -23,6 +23,7 @@ function SETTINGS::get_sub_path() {
     else
         path="$settings_path/$path_name";
         mkdir -p "$path";
+        chmod a+rwx "$path";
         SETTINGS::set_sub_path "$path_name" "$path";
     fi
     
@@ -43,7 +44,13 @@ function SETTINGS::set_sub_path() {
     local path_file="$settings_path/${path_name}.dat";
     
     
+    # if no path name is supplied
+    [[ -z "$path" ]] && path="$settings_path/$path_name";
+            
+    # create path if does not exist
+    [[ ! -e "$path" ]] && mkdir -pv "$path";
     
+    # save path location
     echo "$path" > "$path_file";
 }
 
@@ -71,7 +78,7 @@ function SETTINGS::set_var_path() {
     
     local var_path="$1";
     
-    SETTIGNS::set_sub_path "var_path" "$var_path";
+    SETTINGS::set_sub_path "var_path" "$var_path";
 }
 
 
@@ -89,7 +96,7 @@ function SETTINGS::set_cache_path() {
     
     local cache_path="$1";
     
-    SETTIGNS::set_sub_path "cache_path" "$cache_path";
+    SETTINGS::set_sub_path "cache_path" "$cache_path";
 }
 
 
