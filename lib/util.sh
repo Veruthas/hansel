@@ -129,4 +129,21 @@ function UTIL::url_path_exists() {
     wget --quiet --spider $url_path && return 0 || return 1;
 }
 
+
+# () => 32|64
+function UTIL::get_system_bits() {
+    getconf LONG_BIT;
+}
+
+# () -> 0/1
+function IS_ROOT() {
+    (( EUID == 0 )) && return 0 || return 1;
+}
+
+# () -> 0/1
+function IS_USER() {
+    (( EUID != 0 )) && return 0 || return 1;
+}
+
+
 # TODO: ADD UTIL BACKUP METHOD (add a .# suffix => a.txt -> a.txt.0 ...)

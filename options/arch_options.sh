@@ -119,6 +119,22 @@ function ARCH_OPTIONS::option_install() {
     ARCH_OPTIONS::log "install" "$package";  
 }
 
+# ()
+function ARCH_OPTIONS::mount_package_cache() {
+    alert ARCH_OPTIONS 'in ARCH_OPTIONS::mount_package_cache';
+    
+    local package_path="$(ARCH_OPTIONS::package_cache_path)";
+    
+    ARCH::mount_package_cache "$package_path";
+}
+
+# ()
+function ARCH_OPTIONS::unmount_package_cache() {    
+    alert ARCH_OPTIONS 'in ARCH_OPTIONS::unmount_package_cache';
+    
+    ARCH::unmount_package_cache 
+}
+
 # ([--confirm]/[--force]/[--version, int #], String package);
 OPTIONS::add 'aur' 'ARCH_OPTIONS::option_aur';
 function ARCH_OPTIONS::option_aur() {
