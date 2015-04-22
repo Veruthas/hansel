@@ -8,7 +8,7 @@ alias global='declare -g';
 # VARIABLES
 global -r SCRIPT_FILE="$(realpath $0)";
 
-global -r SCRIPT_PATH="$(dirname $(realpath $0))"
+global -r SCRIPT_PATH="$(dirname $SCRIPT_FILE)"
 
 global -a SCRIPT_ARGUMENTS=("$@");
 
@@ -18,7 +18,15 @@ global -a SCRIPT_ARGUMENTS=("$@");
 # errors is a base file, want to load this before anything else
 source "$SCRIPT_PATH/errors.sh";
 
-[[ -e "$SCRIPT_PATH/DEBUGGING" ]] && DEBUG::on;
+function git_branch() {
+    local branch="$(git branch 2>/dev/null)";
+    branch=$(echo "$branch" | grep '*');
+    echo ${branch//* /};
+}
+
+if [[ $(git_branch) == "develop" ]]; then
+    DEBUG::on;    
+fi
 
 
 # libraries (no executable code)
