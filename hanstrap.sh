@@ -11,7 +11,7 @@ declare -a SCRIPT_ARGUMENTS=("$@");
 declare BITS=$(getconf LONG_BIT);
 
 
-declare NEW_ROOT="{$1:-/mnt}";
+declare NEW_ROOT="${1:-/mnt}";
 
 
 shopt -s expand_aliases
@@ -30,16 +30,22 @@ die() { error "$@"; exit 1; }
 
 function HANSTRAP::confirm_ready() {
     # make sure mount is ready
+    printf "==> Checking new root..."
     if ! mount | grep "$NEW_ROOT"; then
         die "Mount system on '/mnt' and launch hanstrap again.";        
     fi
+    echo "OK";
 
-    if ! ping -c 1 www.google.com 2>/dev/null; then
+    printf "==> Checking internet connection...";
+    
+    if ! ping -c 1 www.google.com 1>2 2>/dev/null; then
         echo "No internet connection was detected."
         read -p "Would you like to continue? " answer;
         
         [[ "$answer" != 'y' ]] && exit 1;
     fi
+    echo "OK";
+    echo
 }
 
 function HANSTRAP::setup_hansel_paths() {
@@ -60,34 +66,76 @@ function HANSTRAP::setup_hansel_paths() {
 
 
 function HANSTRAP::setup_arm_date() {
+    # copy pacman.conf file
+    cp -va "$SCRIPT_PATH/files/pacman.conf/pacman.conf.x$BITS" "/etc/pacman.conf";
+    
     # setup sync => ask user for date, default to today
     read -e -p "Enter date for arm server (YYYY/MM/DD): " -i $(date +'%Y/%m/%d') datepath;
 
     hansel sync "$datepath";
 }
+function HANSTRAP::mount_system_paths() {
+    msg 'Mount system paths...'
+    mount proc "$NEW_ROOT/proc" -t proc -o nosuid,noexec,nodev;
+    mount sys "$NEW_ROOT/sys" -t sysfs -o nosuid,noexec,nodev;
+    mount udev "$NEW_ROOT/dev" -t devtmpfs -o mode=0755,nosuid;
+    mount devpts "$NEW_ROOT/dev/pts" -t devpts -o mode=0620,gid=5,nosuid,noexec;
+    mount shm "$NEW_ROOT/dev/shm" -t tmpfs -o mode=1777,nosuid,nodev;
+    mount run "$NEW_ROOT/run" -t tmpfs -o nosuid,nodev,mode=0755;
+    mount tmp "$NEW_ROOT/tmp" -t tmpfs -o mode=1777,strictatime,nodev,nosuid;
+}
+
+function HANSTRAP::unmount_system_paths() {
+    local paths="proc sys dev dev/pts dev/shm run tmp";
+    
+    for path in $paths; do
+        umount "$NEW_ROOT/$path";
+    done
+}
+
+function HANSTRAP::pacstrap() {    
+    local base_packages="$@";
+    local error_no
+      
+    msg 'Creating install root at %s' "$NEW_ROOT"
+    mkdir -m 0755 -p "$NEW_ROOT"/var/{cache/pacman/pkg,lib/pacman,log} "$NEW_ROOT"/{dev,run,etc}
+    mkdir -m 1777 -p "$NEW_ROOT"/tmp
+    mkdir -m 0555 -p "$NEW_ROOT"/{sys,proc}
+
+    trap 'HANSTRAP::umount_system_paths' EXIT;
+    HANSTRAP::mount_system_paths;
+
+    # HACK: copy sync
+    cp -arv "/var/lib/pacman/sync" "$NEW_ROOT/var/lib/pacman/sync";
+    cp -av "/etc/pacman.conf" "$NEW_ROOT/etc/pacman.conf";
+    cp -av /etc/pacman.d/mirrorlist "$NEW_ROOT/etc/pacman.d/";
+    
+    pacman -r "$NEW_ROOT" -S $base_packages;
+        
+    error_no="$?";
+    
+    return $error_no;
+}
 
 
 function HANSTRAP::install_system() {
-        
+            
     # pacstrap
-    local base_packages="base base-devel linux-headers sudo grub-bios wget"
-
-    # copy pacman.conf file
-    cp -va "$SCRIPT_PATH/files/pacman.conf.x$BITS" "/etc/pacman.conf";
+    local base_packages="base base-devel linux-headers sudo grub-bios wget"    
         
     # mount to package cache
     hansdo ARCH::mount_package_cache "$(hansdo ARCH_OPTIONS::package_cache_path)";
     
     # install system
-    ! "$SCRIPT_PATH/files/pacstrap/pacstrap" $NEW_ROOT "$base_packages" && die "Hanstrap failed using pacstrap";
+    HANSTRAP::pacstrap $NEW_ROOT "$base_packages";
     
-    # unmount pkg folder
+    # umount package cache
     hansdo ARCH::unmount_package_cache;
 }
 
 function HANSTRAP::apply_fixes() {
     # makepkg.fix
-    "$SCRIPT_PATH/files/makepkg.fix/fix-makepkg.sh"
+    "$SCRIPT_PATH/files/makepkg.fix/fix-makepkg.sh"   
 }
 
 function HANSTRAP::copy_hansel() {

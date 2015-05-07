@@ -46,7 +46,7 @@ function ARCH_OPTIONS::log_path() {
     echo "$path"; touch "$path";
 }
 
-global ARCH_OPTIONS_SYNC_CACHE_NAME="sync"
+global ARCH_OPTIONS_SYNC_CACHE_NAME="Sync"
 
 # virtual () => String sync_cache_directory
 function ARCH_OPTIONS::sync_cache_directory() {
