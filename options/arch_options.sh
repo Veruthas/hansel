@@ -231,6 +231,10 @@ function ARCH_OPTIONS::option_sync() {
     ARCH::sync "$date" "$sync_path" "$mirror_file" "$date_file";
     err_no="$?" && ((err_no != 0)) && return "$err_no";
     
+    local package_path="$(ARCH_OPTIONS::package_cache_path)";
+        
+    ARCH::update "$package_path" true;
+    
     ARCH_OPTIONS::log 'sync' "$date";
 }
 
