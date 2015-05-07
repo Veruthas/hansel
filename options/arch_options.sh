@@ -229,13 +229,21 @@ function ARCH_OPTIONS::option_sync() {
     local date_file="$(ARCH_OPTIONS::date_file_path)";
     
     ARCH::sync "$date" "$sync_path" "$mirror_file" "$date_file";
-    err_no="$?" && ((err_no != 0)) && return "$err_no";
+    err_no="$?" && ((err_no != 0)) && return "$err_no";   
+    
+    ARCH_OPTIONS::log 'sync' "$date";
+}
+
+# ()
+OPTIONS::add 'update' 'ARCH_OPTIONS::option_update';
+function ARCH_OPTIONS::option_update() {
     
     local package_path="$(ARCH_OPTIONS::package_cache_path)";
         
     ARCH::update "$package_path" true;
+    err_no="$?" && ((err_no != 0)) && return "$err_no";
     
-    ARCH_OPTIONS::log 'sync' "$date";
+    ARCH_OPTIONS::log 'update';
 }
 
 

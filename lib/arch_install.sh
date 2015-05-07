@@ -14,8 +14,8 @@ function ARCH::mount_package_cache() {
     
     local package_path="$1";
     
-    IS_ROOT && mount -v --bind "$package_path" "$ARCH_REAL_PACKAGE_PATH";
-    IS_USER && sudo mount -v --bind "$package_path" "$ARCH_REAL_PACKAGE_PATH";
+    IS_ROOT && mkdir -pv "$ARCH_REAL_PACKAGE_PATH" && mount -v --bind "$package_path" "$ARCH_REAL_PACKAGE_PATH";
+    IS_USER && sudo mkdir -pv "$ARCH_REAL_PACKAGE_PATH" && sudo mount -v --bind "$package_path" "$ARCH_REAL_PACKAGE_PATH";
 }
 
 # ()
