@@ -39,12 +39,12 @@ function ARCH::sync() {
     # check if sync already cached    
     if [[ -e "$new_sync_path" ]]; then        
         echo "Cached sync found, copying...";
-        sudo rm -rv "$ARCH_REAL_SYNC_PATH";
-        sudo cp -rv "$new_sync_path" "$ARCH_REAL_SYNC_PATH";        
+        sudo rm -r "$ARCH_REAL_SYNC_PATH";
+        sudo cp -r "$new_sync_path" "$ARCH_REAL_SYNC_PATH";        
     else
         echo "No cached sync found, downloading...";
         sudo pacman -Sy;        
-        cp -rv "$ARCH_REAL_SYNC_PATH" "$new_sync_path";
+        cp -r "$ARCH_REAL_SYNC_PATH" "$new_sync_path";
     fi            
 }
 
