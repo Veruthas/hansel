@@ -30,26 +30,28 @@ die() { error "$@"; exit 1; }
 
 function HANSTRAP::confirm_ready() {
     # make sure mount is ready
-    printf "==> Checking new root..."
-    if ! mount | grep "$NEW_ROOT"; then
-        die "Mount system on '/mnt' and launch hanstrap again.";        
+    printf "==> Checking new root....."
+    if ! mount | grep "$NEW_ROOT" > /dev/null; then
+        printf "[FAILED] "; die "Mount system on '/mnt' and launch hanstrap again.";        
     fi
-    echo "OK";
+    echo "[OK]";
 
-    printf "==> Checking internet connection...";
+    printf "==> Checking internet connection.....";
     
-    if ! ping -c 1 www.google.com 1>2 2>/dev/null; then
-        echo "No internet connection was detected."
+    if ! ping -c 1 www.google.com 2>/dev/null 1>&2 ; then
+        echo "[FAILED] No internet connection was detected."
         read -p "Would you like to continue? " answer;
         
         [[ "$answer" != 'y' ]] && exit 1;
     fi
-    echo "OK";
+    echo "[OK]";
     echo
+    msg "-----------------------------------------------------";
+    echo;
 }
 
 function HANSTRAP::setup_hansel_paths() {
-
+    msg "Selecting Hansel Paths..."
     # This feels weird, fix?
     
     # setup var/cache path
@@ -62,17 +64,25 @@ function HANSTRAP::setup_hansel_paths() {
 
     # setup default var path
     chmod a+rwx $(hansel path var);
+    
+    msg "-----------------------------------------------------";
+    echo;
 }
 
 
 function HANSTRAP::setup_arm_date() {
-    # copy pacman.conf file
-    cp -va "$SCRIPT_PATH/files/pacman.conf/pacman.conf.x$BITS" "/etc/pacman.conf";
+    msg 'Selecting arm server...';
+    
+    # copy pacman.conf file    
+    cp -a "$SCRIPT_PATH/files/pacman.conf/pacman.conf.x$BITS" "/etc/pacman.conf";
     
     # setup sync => ask user for date, default to today
     read -e -p "Enter date for arm server (YYYY/MM/DD): " -i $(date +'%Y/%m/%d') datepath;
 
     hansel sync "$datepath";
+    msg "-----------------------------------------------------";
+    echo;
+    
 }
 function HANSTRAP::mount_system_paths() {
     msg 'Mount system paths...'
@@ -83,11 +93,14 @@ function HANSTRAP::mount_system_paths() {
     mount shm "$NEW_ROOT/dev/shm" -t tmpfs -o mode=1777,nosuid,nodev;
     mount run "$NEW_ROOT/run" -t tmpfs -o nosuid,nodev,mode=0755;
     mount tmp "$NEW_ROOT/tmp" -t tmpfs -o mode=1777,strictatime,nodev,nosuid;
+    msg "-----------------------------------------------------";
+    echo;
 }
 
 function HANSTRAP::unmount_system_paths() {
-    local paths="proc sys dev dev/pts dev/shm run tmp";
     
+    local paths="tmp run dev/shm dev/pts dev sys proc";
+
     for path in $paths; do
         umount "$NEW_ROOT/$path";
     done
@@ -102,16 +115,27 @@ function HANSTRAP::pacstrap() {
     mkdir -m 1777 -p "$NEW_ROOT"/tmp
     mkdir -m 0555 -p "$NEW_ROOT"/{sys,proc}
 
-    trap 'HANSTRAP::umount_system_paths' EXIT;
+    trap 'HANSTRAP::unmount_system_paths' EXIT INT ;
     HANSTRAP::mount_system_paths;
 
-    # HACK: copy sync
-    cp -arv "/var/lib/pacman/sync" "$NEW_ROOT/var/lib/pacman/sync";
-    cp -av "/etc/pacman.conf" "$NEW_ROOT/etc/pacman.conf";
-    cp -av /etc/pacman.d/mirrorlist "$NEW_ROOT/etc/pacman.d/";
+    # HACK: copy, need to do this twice?
+    cp -ar "/var/lib/pacman/sync" "$NEW_ROOT/var/lib/pacman/sync";
+    cp -a "/etc/pacman.conf" "$NEW_ROOT/etc/pacman.conf";    
+    mkdir -p "$NEW_ROOT/etc/pacman.d";    
+    cp -arv /etc/pacman.d/* "$NEW_ROOT/etc/pacman.d";
     
+    # TODO: individual download each package first, maybe with a .mid extension?
     pacman -r "$NEW_ROOT" -S $base_packages;
-        
+    
+    # HACK: copy, apparently one of the packages installed overwrites these (filesystem one?)
+    cp -ar "/var/lib/pacman/sync" "$NEW_ROOT/var/lib/pacman/sync";
+    cp -a "/etc/pacman.conf" "$NEW_ROOT/etc/pacman.conf";    
+    mkdir -p "$NEW_ROOT/etc/pacman.d";    
+    cp -arv /etc/pacman.d/* "$NEW_ROOT/etc/pacman.d";
+       
+    
+    HANSTRAP::unmount_system_paths;
+    trap - EXIT
     error_no="$?";
     
     return $error_no;
@@ -119,43 +143,55 @@ function HANSTRAP::pacstrap() {
 
 
 function HANSTRAP::install_system() {
-            
-    # pacstrap
+
+    msg "Installing base system...";
+    
     local base_packages="base base-devel linux-headers sudo grub-bios wget"    
         
-    # mount to package cache
+    # mount package cache
     hansdo ARCH::mount_package_cache "$(hansdo ARCH_OPTIONS::package_cache_path)";
     
     # install system
-    HANSTRAP::pacstrap $NEW_ROOT "$base_packages";
+    HANSTRAP::pacstrap "$base_packages";
     
     # umount package cache
     hansdo ARCH::unmount_package_cache;
+    
+    msg "-----------------------------------------------------";
+    echo;    
 }
 
 function HANSTRAP::apply_fixes() {
+    msg "Applying fixes...";
+    
     # makepkg.fix
-    "$SCRIPT_PATH/files/makepkg.fix/fix-makepkg.sh"   
+    "$SCRIPT_PATH/files/makepkg.fix/fix-makepkg.sh"           
+    
+    msg "-----------------------------------------------------";
+    echo;
 }
 
 function HANSTRAP::copy_hansel() {
     
+    msg "Installing Hansel..."
     # cp hansel into /mnt/opt/hansel (should i get rid of hanstrap files?)
     cp -rv "$SCRIPT_PATH" "/mnt/opt/hansel";
 
     # ln -s /opt/hansel/hansel.sh /mnt/usr/local/bin/hansel
-    ln -s /mnt/opt/hansel/hansel.sh /mnt/usr/local/bin/hansel;
+    ln -s /opt/hansel/hansel.sh /mnt/usr/local/bin/hansel;
     chmod a+rx /mnt/usr/local/bin/hansel;
 
     # cp /etc/hansel.d/ into /mnt/etc/hansel.d/
     cp -rva /etc/hansel.d /mnt/etc/hansel.d
+    msg "-----------------------------------------------------";
+    echo;
 }
 
 function HANSTRAP::setup_fstab() {
 
     local FS_TABLE_FILE="/mnt/etc/fstab";
 
-    echo "Generating fstab..."
+    msg "Generating fstab..."
     echo "Select device identification scheme";
     read -e -p "(u)uid, (l)abel (d)evice: " -i 'd' fstab_choice;
 
@@ -175,15 +211,32 @@ function HANSTRAP::setup_fstab() {
 
     read -p "Press any key to edit fstab...";
 
-    nano "$FS_TABLE_FILE";
-
+    nano "$FS_TABLE_FILE";    
 }
+
+pause() { read -p "Press any key to continue..."; };
 
 
 HANSTRAP::confirm_ready;
+
 HANSTRAP::setup_hansel_paths;
+
 HANSTRAP::setup_arm_date;
+
 HANSTRAP::install_system;
-HANSTRAP::apply_fixes;
-HANSTRAP::copy_hansel;
+
 HANSTRAP::setup_fstab;
+
+HANSTRAP::apply_fixes;
+
+HANSTRAP::copy_hansel;
+
+
+if [[ -e "$SCRIPT_PATH/../trace-scripts" ]]; then
+    mkdir -pv "$NEW_ROOT/root/Installation";
+    mount --bind "$SCRIPT_PATH/../trace-scripts" "$NEW_ROOT/root/Installation";
+fi
+
+arch-chroot "$NEW_ROOT"
+
+umount "$NEW_ROOT/root/Installation";

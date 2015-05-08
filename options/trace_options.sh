@@ -44,7 +44,7 @@ function TRACE_OPTIONS::option_trace() {
         
         local err_no=0;
         
-        if [[ -n "$line" ]] && [[ ${line:0:1} != "#" ]]; then
+        if [[ -n "$line" ]] && [[ ! "$line" =~ ^[\ ]*# ]]; then
             # TODO: quoting is very wonky, Check for proper quoting?
             eval "$SCRIPT_FILE $line";
             err_no=$?;
