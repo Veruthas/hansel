@@ -178,8 +178,8 @@ function HANSTRAP::copy_hansel() {
     cp -rv "$SCRIPT_PATH" "/mnt/opt/hansel";
 
     # ln -s /opt/hansel/hansel.sh /mnt/usr/local/bin/hansel
-    ln -s /opt/hansel/hansel.sh /mnt/usr/local/bin/hansel;
-    chmod a+rx /mnt/usr/local/bin/hansel;
+    ln -s /opt/hansel/hansel.sh /mnt/usr/bin/hansel;
+    #chmod a+rx /mnt/usr/local/bin/hansel;
 
     # cp /etc/hansel.d/ into /mnt/etc/hansel.d/
     cp -rva /etc/hansel.d /mnt/etc/hansel.d

@@ -76,10 +76,7 @@ function VAR_OPTIONS::option_set() {
     
     vars=$(VARS::set_vars "$vars" "$value" "$@");
     
-    VAR_OPTIONS::save_vars "$vars";
-    
-    
-    VARS::list_vars "$vars";
+    VAR_OPTIONS::save_vars "$vars";    
 }
 
 # (String... name) -> unset VARS[name...]
@@ -92,10 +89,7 @@ function VAR_OPTIONS::option_unset() {
     
     vars=$(VARS::unset_vars "$vars" "$@");
     
-    VAR_OPTIONS::save_vars "$vars";
-    
-    
-    VARS::list_vars "$vars";
+    VAR_OPTIONS::save_vars "$vars";    
 }
 
 # (String... vars) -> >&1
