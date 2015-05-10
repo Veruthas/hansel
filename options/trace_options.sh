@@ -43,7 +43,7 @@ function TRACE_OPTIONS::option_trace() {
         local line=$(FILE::peek_line "$trace_file");
         
         local err_no=0;
-        
+                
         if [[ -n "$line" ]] && [[ ! "$line" =~ ^[\ ]*# ]]; then
             # TODO: quoting is very wonky, Check for proper quoting?
             eval "$SCRIPT_FILE $line";
@@ -52,8 +52,10 @@ function TRACE_OPTIONS::option_trace() {
             break;
         fi
         
-        if (( err_no != 0 )); then                        
+        if (( err_no != 0 )); then    
+            # TODO: nano into the trace file?
             throw 1 "Error processing line #$line_no: '$line'; run trace again to continue...";
+            echo "Trace file: $trace_file" >&2;
             return 1;
         fi
         (( line_no++ ))

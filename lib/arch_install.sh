@@ -45,6 +45,7 @@ function ARCH::install() {
         pacman -S $package $confirm
         err_no="$?";
     else
+        # TODO: fails if package has a space in name
         sudo pacman -S $package $confirm;
         err_no="$?";
     fi        
